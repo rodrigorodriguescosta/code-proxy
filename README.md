@@ -135,22 +135,40 @@ sudo systemctl enable --now code-proxy
 
 #### Expose via Cloudflare Tunnel
 
-Code Proxy has built-in Cloudflare tunnel support — no need for nginx or port forwarding:
+Code Proxy has built-in Cloudflare tunnel support — no need for nginx or port forwarding.
 
-1. Open the dashboard → Settings → Enable Tunnel
-2. Share the generated URL with your team
-3. Each team member configures their client to point at the tunnel URL
+**Quick Tunnel** (random URL — changes on every restart):
+
+1. Open the dashboard → Tunnel → Enable Tunnel
+2. A random `*.trycloudflare.com` URL is generated
+3. Use this URL in Cursor — but note it **changes on every restart**
+
+**Named Tunnel** (fixed URL — recommended):
+
+The Quick Tunnel URL changes every time the tunnel restarts, which means you have to update Cursor settings constantly. For a **permanent URL**, use a Cloudflare Named Tunnel:
+
+1. Go to [Cloudflare Zero Trust](https://one.dash.cloudflare.com) → Networks → Tunnels
+2. Create a tunnel — name it "code-proxy" or similar
+3. Add a public hostname (e.g. `proxy.yourdomain.com`) pointing to `http://localhost:3456`
+4. Copy the tunnel token (starts with `eyJ...`)
+5. In the dashboard → Tunnel → Configure Token → paste the token
+6. Enable the tunnel — your fixed URL is now active
+
+This way Cursor always points to `https://proxy.yourdomain.com/v1` and it never changes.
 
 ## Quick start with Cursor
+
+> **Important:** Cursor does **not** support `localhost` as the OpenAI Base URL. You must expose Code Proxy via a **public URL** — either a VPS with a public IP, a Cloudflare tunnel, or any reverse proxy/tunnel solution. See [Tunnel setup](#expose-via-cloudflare-tunnel) below.
 
 1. Start Code Proxy:
    ```bash
    code-proxy
    ```
 2. Open the dashboard at `http://localhost:3456` and connect your accounts (OAuth or API key)
-3. In Cursor → Settings → Models → OpenAI API Key: enter any value (or a Code Proxy API key if you enabled `require_api_key`)
-4. Set the Base URL to `http://localhost:3456/v1`
-5. Pick a model — use the prefix to choose the provider:
+3. Enable a tunnel (Dashboard → Tunnel) or deploy on a VPS to get a public URL
+4. In Cursor → Settings → Models → OpenAI API Key: enter any value (or a Code Proxy API key if you enabled `require_api_key`)
+5. Set the Base URL to `https://your-public-url/v1`
+6. Pick a model — use the prefix to choose the provider:
 
 | Model ID | Provider | Mode |
 |----------|----------|------|
@@ -243,6 +261,10 @@ For **CLI providers** (subscription mode), you need the respective CLI tool inst
 - **Gemini CLI**: install and authenticate per Google's instructions
 
 For **API providers**, you just need an API key or OAuth credentials — no CLI required.
+
+## Author
+
+Created by **Rodrigo Rodrigues** ([@rodrigorodriguescosta](https://github.com/rodrigorodriguescosta)).
 
 ## License
 
