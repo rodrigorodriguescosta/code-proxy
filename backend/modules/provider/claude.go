@@ -24,6 +24,7 @@ func (c *Claude) IsAvailable() bool  { return CLIBinaryAvailable("claude") }
 
 func (c *Claude) Models() []Model {
 	return []Model{
+		// CLI models (local binary)
 		{ID: "cli-cc/claude-opus-4-6", Name: "Claude Opus 4.6", OwnedBy: "anthropic"},
 		{ID: "cli-cc/claude-opus-4-6:low", Name: "Claude Opus 4.6 (Low)", OwnedBy: "anthropic"},
 		{ID: "cli-cc/claude-opus-4-6:medium", Name: "Claude Opus 4.6 (Medium)", OwnedBy: "anthropic"},
@@ -33,6 +34,16 @@ func (c *Claude) Models() []Model {
 		{ID: "cli-cc/claude-sonnet-4-6:medium", Name: "Claude Sonnet 4.6 (Medium)", OwnedBy: "anthropic"},
 		{ID: "cli-cc/claude-sonnet-4-6:max", Name: "Claude Sonnet 4.6 (Max)", OwnedBy: "anthropic"},
 		{ID: "cli-cc/claude-haiku-4-5", Name: "Claude Haiku 4.5", OwnedBy: "anthropic"},
+		// OAuth models (subscription token)
+		{ID: "cc/claude-opus-4-6", Name: "Claude Opus 4.6", OwnedBy: "anthropic"},
+		{ID: "cc/claude-opus-4-6:low", Name: "Claude Opus 4.6 (Low)", OwnedBy: "anthropic"},
+		{ID: "cc/claude-opus-4-6:medium", Name: "Claude Opus 4.6 (Medium)", OwnedBy: "anthropic"},
+		{ID: "cc/claude-opus-4-6:max", Name: "Claude Opus 4.6 (Max)", OwnedBy: "anthropic"},
+		{ID: "cc/claude-sonnet-4-6", Name: "Claude Sonnet 4.6", OwnedBy: "anthropic"},
+		{ID: "cc/claude-sonnet-4-6:low", Name: "Claude Sonnet 4.6 (Low)", OwnedBy: "anthropic"},
+		{ID: "cc/claude-sonnet-4-6:medium", Name: "Claude Sonnet 4.6 (Medium)", OwnedBy: "anthropic"},
+		{ID: "cc/claude-sonnet-4-6:max", Name: "Claude Sonnet 4.6 (Max)", OwnedBy: "anthropic"},
+		{ID: "cc/claude-haiku-4-5", Name: "Claude Haiku 4.5", OwnedBy: "anthropic"},
 	}
 }
 

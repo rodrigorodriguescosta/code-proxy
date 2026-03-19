@@ -26,7 +26,7 @@ func (c *Codex) IsAvailable() bool  { return CLIBinaryAvailable("codex") }
 
 func (c *Codex) Models() []Model {
 	return []Model{
-		// Codex models without the "gpt" substring in the model ID (Cursor bug workaround).
+		// CLI models (local binary)
 		{ID: "cli-codex/5.3", Name: "GPT 5.3 Codex", OwnedBy: "openai"},
 		{ID: "cli-codex/5.3-xhigh", Name: "GPT 5.3 Codex (xHigh)", OwnedBy: "openai"},
 		{ID: "cli-codex/5.3-high", Name: "GPT 5.3 Codex (High)", OwnedBy: "openai"},
@@ -54,6 +54,26 @@ func (c *Codex) Models() []Model {
 		{ID: "cli-codex/5-mini", Name: "GPT 5 Codex Mini", OwnedBy: "openai"},
 		{ID: "cli-codex/o4-mini", Name: "o4 Mini", OwnedBy: "openai"},
 		{ID: "cli-codex/o3", Name: "o3", OwnedBy: "openai"},
+
+		// OAuth models (subscription token)
+		{ID: "codex/5.3", Name: "GPT 5.3 Codex", OwnedBy: "openai"},
+		{ID: "codex/5.3-xhigh", Name: "GPT 5.3 Codex (xHigh)", OwnedBy: "openai"},
+		{ID: "codex/5.3-high", Name: "GPT 5.3 Codex (High)", OwnedBy: "openai"},
+		{ID: "codex/5.3-low", Name: "GPT 5.3 Codex (Low)", OwnedBy: "openai"},
+		{ID: "codex/5.3-spark", Name: "GPT 5.3 Codex Spark", OwnedBy: "openai"},
+		{ID: "codex/5.4", Name: "GPT 5.4 Codex", OwnedBy: "openai"},
+		{ID: "codex/5.4-xhigh", Name: "GPT 5.4 Codex (xHigh)", OwnedBy: "openai"},
+		{ID: "codex/5.4-high", Name: "GPT 5.4 Codex (High)", OwnedBy: "openai"},
+		{ID: "codex/5.4-low", Name: "GPT 5.4 Codex (Low)", OwnedBy: "openai"},
+		{ID: "codex/5.4-spark", Name: "GPT 5.4 Codex Spark", OwnedBy: "openai"},
+		{ID: "codex/5.2-codex", Name: "GPT 5.2 Codex", OwnedBy: "openai"},
+		{ID: "codex/5.1", Name: "GPT 5.1 Codex", OwnedBy: "openai"},
+		{ID: "codex/5.1-max", Name: "GPT 5.1 Codex Max", OwnedBy: "openai"},
+		{ID: "codex/5.1-mini", Name: "GPT 5.1 Codex Mini", OwnedBy: "openai"},
+		{ID: "codex/5-codex", Name: "GPT 5 Codex", OwnedBy: "openai"},
+		{ID: "codex/5-mini", Name: "GPT 5 Codex Mini", OwnedBy: "openai"},
+		{ID: "codex/o4-mini", Name: "o4 Mini", OwnedBy: "openai"},
+		{ID: "codex/o3", Name: "o3", OwnedBy: "openai"},
 	}
 }
 
