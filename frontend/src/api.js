@@ -86,6 +86,10 @@ export const api = {
     }),
   }),
 
+  // Export / Import
+  exportData: (includeLogs) => request('/api/export' + (includeLogs ? '?logs=true' : '')),
+  importData: (data, mode = 'merge') => request(`/api/import?mode=${mode}`, { method: 'POST', body: JSON.stringify(data) }),
+
   // Dashboard Auth
   authStatus: () => request('/api/auth/status'),
   authLogin: (password) => request('/api/auth/login', { method: 'POST', body: JSON.stringify({ password }) }),

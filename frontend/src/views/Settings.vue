@@ -13,6 +13,53 @@ const confirmPassword = ref('')
 const error = ref('')
 const success = ref('')
 
+// Export / Import
+const exportLoading = ref(false)
+const importLoading = ref(false)
+const importMode = ref('merge')
+const importResult = ref(null)
+const importError = ref('')
+
+async function exportData(includeLogs = false) {
+  exportLoading.value = true
+  try {
+    const data = await api.exportData(includeLogs)
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `code-proxy-backup-${new Date().toISOString().slice(0,10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch (e) {
+    importError.value = e.message || 'Export failed'
+  }
+  exportLoading.value = false
+}
+
+function triggerImport() {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.json'
+  input.onchange = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    importLoading.value = true
+    importError.value = ''
+    importResult.value = null
+    try {
+      const text = await file.text()
+      const data = JSON.parse(text)
+      const result = await api.importData(data, importMode.value)
+      importResult.value = result
+    } catch (e) {
+      importError.value = e.message || 'Import failed'
+    }
+    importLoading.value = false
+  }
+  input.click()
+}
+
 async function loadStatus() {
   try {
     const status = await api.authStatus()
@@ -134,6 +181,66 @@ onMounted(loadStatus)
             </button>
           </div>
         </div>
+      </div>
+      <!-- Export / Import -->
+      <div class="border rounded-xl p-6 max-w-lg mt-6"
+           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
+        <h3 class="text-sm font-semibold uppercase tracking-wider mb-1"
+            :class="props.theme === 'light' ? 'text-gray-700' : 'text-white'">Backup & Restore</h3>
+        <p class="text-xs mb-4" :class="props.theme === 'light' ? 'text-gray-400' : 'text-gray-500'">
+          Export all data (accounts, API keys, settings) to a JSON file, or import from a backup.
+        </p>
+
+        <!-- Export -->
+        <div class="mb-4">
+          <p class="text-xs font-medium mb-2" :class="props.theme === 'light' ? 'text-gray-600' : 'text-gray-300'">Export</p>
+          <div class="flex gap-2">
+            <button @click="exportData(false)" :disabled="exportLoading"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
+              {{ exportLoading ? 'Exporting...' : 'Export Data' }}
+            </button>
+            <button @click="exportData(true)" :disabled="exportLoading"
+                    class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    :class="props.theme === 'light'
+                      ? 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                      : 'bg-gray-800 hover:bg-gray-700 text-gray-300'">
+              Export with Logs
+            </button>
+          </div>
+        </div>
+
+        <!-- Import -->
+        <div>
+          <p class="text-xs font-medium mb-2" :class="props.theme === 'light' ? 'text-gray-600' : 'text-gray-300'">Import</p>
+          <div class="flex items-center gap-3 mb-2">
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" v-model="importMode" value="merge" class="accent-blue-500" />
+              <span class="text-xs" :class="props.theme === 'light' ? 'text-gray-600' : 'text-gray-400'">Merge (skip existing)</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" v-model="importMode" value="replace" class="accent-blue-500" />
+              <span class="text-xs text-red-400">Replace (wipe + import)</span>
+            </label>
+          </div>
+          <button @click="triggerImport" :disabled="importLoading"
+                  class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  :class="props.theme === 'light'
+                    ? 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                    : 'bg-gray-800 hover:bg-gray-700 text-gray-300'">
+            {{ importLoading ? 'Importing...' : 'Import from File' }}
+          </button>
+        </div>
+
+        <!-- Import result -->
+        <div v-if="importResult" class="mt-3 border rounded-lg p-3 text-xs"
+             :class="props.theme === 'light' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-green-500/10 border-green-500/20 text-green-400'">
+          <p class="font-medium mb-1">Import complete</p>
+          <p v-if="importResult.accounts_imported">Accounts: {{ importResult.accounts_imported }} imported, {{ importResult.accounts_skipped }} skipped</p>
+          <p v-if="importResult.api_keys_imported">API Keys: {{ importResult.api_keys_imported }} imported, {{ importResult.api_keys_skipped }} skipped</p>
+          <p v-if="importResult.settings_imported">Settings: {{ importResult.settings_imported }} imported, {{ importResult.settings_skipped }} skipped</p>
+          <p v-if="importResult.logs_imported">Logs: {{ importResult.logs_imported }} imported, {{ importResult.logs_skipped }} skipped</p>
+        </div>
+        <p v-if="importError" class="mt-2 text-red-400 text-xs">{{ importError }}</p>
       </div>
     </template>
   </div>

@@ -193,6 +193,53 @@ func registerDashboardRoutes(mux *http.ServeMux, db *database.DB, acctMgr *accou
 		}
 	})
 
+	// Export / Import
+	mux.HandleFunc("/api/export", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			writeError(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		includeLogs := r.URL.Query().Get("logs") == "true"
+		data, err := db.Export(includeLogs)
+		if err != nil {
+			writeError(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Disposition", "attachment; filename=code-proxy-backup.json")
+		json.NewEncoder(w).Encode(data)
+	})
+
+	mux.HandleFunc("/api/import", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			writeError(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		mode := r.URL.Query().Get("mode")
+		if mode == "" {
+			mode = "merge"
+		}
+		if mode != "merge" && mode != "replace" {
+			writeError(w, "mode must be 'merge' or 'replace'", http.StatusBadRequest)
+			return
+		}
+
+		var data database.ExportData
+		if err := readJSON(r, &data); err != nil {
+			writeError(w, "Invalid JSON: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		result, err := db.Import(&data, mode)
+		if err != nil {
+			writeError(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(result)
+	})
+
 	// Accounts (multi-provider, multi-account)
 	registerAccountRoutes(mux, db, acctMgr, registry)
 }
