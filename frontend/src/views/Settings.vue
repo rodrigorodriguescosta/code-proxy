@@ -126,7 +126,7 @@ onMounted(loadStatus)
     <template v-else>
       <!-- Dashboard Password -->
       <div class="border rounded-xl p-6 max-w-lg"
-           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
+           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-zinc-900 border-zinc-800/40'">
         <h3 class="text-sm font-semibold uppercase tracking-wider mb-1"
             :class="props.theme === 'light' ? 'text-gray-700' : 'text-white'">Dashboard Password</h3>
         <p class="text-xs mb-4" :class="props.theme === 'light' ? 'text-gray-400' : 'text-gray-500'">
@@ -140,7 +140,7 @@ onMounted(loadStatus)
                    class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
                    :class="props.theme === 'light'
                      ? 'bg-gray-50 border-gray-200 text-gray-900'
-                     : 'bg-gray-950 border-gray-700 text-white'" />
+                     : 'bg-zinc-950 border-zinc-800 text-white'" />
           </div>
 
           <div>
@@ -151,7 +151,7 @@ onMounted(loadStatus)
                    class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
                    :class="props.theme === 'light'
                      ? 'bg-gray-50 border-gray-200 text-gray-900'
-                     : 'bg-gray-950 border-gray-700 text-white'" />
+                     : 'bg-zinc-950 border-zinc-800 text-white'" />
           </div>
 
           <div>
@@ -161,7 +161,7 @@ onMounted(loadStatus)
                    class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
                    :class="props.theme === 'light'
                      ? 'bg-gray-50 border-gray-200 text-gray-900'
-                     : 'bg-gray-950 border-gray-700 text-white'" />
+                     : 'bg-zinc-950 border-zinc-800 text-white'" />
           </div>
 
           <p v-if="error" class="text-red-400 text-xs">{{ error }}</p>
@@ -176,7 +176,7 @@ onMounted(loadStatus)
                     class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                     :class="props.theme === 'light'
                       ? 'bg-gray-100 hover:bg-gray-200 text-red-500'
-                      : 'bg-gray-800 hover:bg-gray-700 text-red-400'">
+                      : 'bg-zinc-900 hover:bg-zinc-800 text-red-400'">
               Remove Password
             </button>
           </div>
@@ -184,7 +184,7 @@ onMounted(loadStatus)
       </div>
       <!-- Export / Import -->
       <div class="border rounded-xl p-6 max-w-lg mt-6"
-           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
+           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-zinc-900 border-zinc-800/40'">
         <h3 class="text-sm font-semibold uppercase tracking-wider mb-1"
             :class="props.theme === 'light' ? 'text-gray-700' : 'text-white'">Backup & Restore</h3>
         <p class="text-xs mb-4" :class="props.theme === 'light' ? 'text-gray-400' : 'text-gray-500'">
@@ -203,7 +203,7 @@ onMounted(loadStatus)
                     class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                     :class="props.theme === 'light'
                       ? 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                      : 'bg-gray-800 hover:bg-gray-700 text-gray-300'">
+                      : 'bg-zinc-900 hover:bg-zinc-800 text-gray-300'">
               Export with Logs
             </button>
           </div>
@@ -226,7 +226,7 @@ onMounted(loadStatus)
                   class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                   :class="props.theme === 'light'
                     ? 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                    : 'bg-gray-800 hover:bg-gray-700 text-gray-300'">
+                    : 'bg-zinc-900 hover:bg-zinc-800 text-gray-300'">
             {{ importLoading ? 'Importing...' : 'Import from File' }}
           </button>
         </div>

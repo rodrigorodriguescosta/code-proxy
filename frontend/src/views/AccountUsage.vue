@@ -102,9 +102,10 @@ function timeAgo(iso) {
 
 // Quota helpers
 function getQuotaColor(percentage) {
-  if (percentage > 70) return { bar: 'bg-green-500', barBg: 'bg-green-500/10', text: 'text-green-500', emoji: '🟢' }
-  if (percentage >= 30) return { bar: 'bg-yellow-500', barBg: 'bg-yellow-500/10', text: 'text-yellow-500', emoji: '🟡' }
-  return { bar: 'bg-red-500', barBg: 'bg-red-500/10', text: 'text-red-500', emoji: '🔴' }
+  const light = props.theme === 'light'
+  if (percentage > 70) return { bar: 'bg-green-500', barBg: light ? 'bg-green-100' : 'bg-green-500/10', text: light ? 'text-green-700' : 'text-green-500', emoji: '🟢' }
+  if (percentage >= 30) return { bar: 'bg-yellow-500', barBg: light ? 'bg-yellow-100' : 'bg-yellow-500/10', text: light ? 'text-yellow-700' : 'text-yellow-500', emoji: '🟡' }
+  return { bar: 'bg-red-500', barBg: light ? 'bg-red-100' : 'bg-red-500/10', text: light ? 'text-red-700' : 'text-red-500', emoji: '🔴' }
 }
 
 function formatResetCountdown(resetAt) {
@@ -209,7 +210,7 @@ onUnmounted(() => {
         </p>
       </div>
 
-      <div class="flex gap-1 p-1 rounded-lg" :class="props.theme === 'light' ? 'bg-gray-100' : 'bg-gray-800'">
+      <div class="flex gap-1 p-1 rounded-lg" :class="props.theme === 'light' ? 'bg-gray-100' : 'bg-zinc-900'">
         <button
           v-for="p in periods"
           :key="p.value"
@@ -247,7 +248,7 @@ onUnmounted(() => {
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           <div v-for="a in quotaAccounts" :key="'quota-' + a.id"
                class="border rounded-xl p-4"
-               :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
+               :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-zinc-900 border-zinc-800/40'">
             <!-- Provider header -->
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-2.5">
@@ -274,7 +275,7 @@ onUnmounted(() => {
               <button @click="refreshQuota(a.id)"
                       :disabled="quotaLoading[a.id]"
                       class="p-1.5 rounded-lg transition-colors disabled:opacity-50"
-                      :class="props.theme === 'light' ? 'hover:bg-gray-100 text-gray-400' : 'hover:bg-gray-800 text-gray-500'"
+                      :class="props.theme === 'light' ? 'hover:bg-gray-100 text-gray-400' : 'hover:bg-zinc-900 text-gray-500'"
                       title="Refresh quota">
                 <span :class="quotaLoading[a.id] ? 'animate-spin inline-block' : ''">&#8635;</span>
               </button>
@@ -282,8 +283,8 @@ onUnmounted(() => {
 
             <!-- Loading state -->
             <div v-if="quotaLoading[a.id] && !quotaData[a.id]" class="space-y-3">
-              <div class="h-3 rounded animate-pulse" :class="props.theme === 'light' ? 'bg-gray-100' : 'bg-gray-800'"></div>
-              <div class="h-2 rounded animate-pulse" :class="props.theme === 'light' ? 'bg-gray-100' : 'bg-gray-800'"></div>
+              <div class="h-3 rounded animate-pulse" :class="props.theme === 'light' ? 'bg-gray-100' : 'bg-zinc-900'"></div>
+              <div class="h-2 rounded animate-pulse" :class="props.theme === 'light' ? 'bg-gray-100' : 'bg-zinc-900'"></div>
             </div>
 
             <!-- Error state -->
@@ -348,15 +349,15 @@ onUnmounted(() => {
 
       <!-- Chart -->
       <div v-if="accounts.length" class="border rounded-xl p-5"
-           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
+           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-zinc-900 border-zinc-800/40'">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-sm font-semibold uppercase tracking-wider"
               :class="props.theme === 'light' ? 'text-gray-700' : 'text-white'">Usage by Account</h3>
-          <div class="flex gap-1 p-1 rounded-lg" :class="props.theme === 'light' ? 'bg-gray-100' : 'bg-gray-800'">
+          <div class="flex gap-1 p-1 rounded-lg" :class="props.theme === 'light' ? 'bg-gray-100' : 'bg-zinc-900'">
             <button v-for="m in metrics" :key="m.value" @click="chartMetric = m.value"
                     class="px-2.5 py-1 rounded-md text-xs font-medium transition-colors"
                     :class="chartMetric === m.value
-                      ? (props.theme === 'light' ? 'bg-white text-gray-900 shadow-sm' : 'bg-gray-700 text-white')
+                      ? (props.theme === 'light' ? 'bg-white text-gray-900 shadow-sm' : 'bg-zinc-800 text-white')
                       : (props.theme === 'light' ? 'text-gray-500 hover:text-gray-900' : 'text-gray-400 hover:text-white')">
               {{ m.label }}
             </button>
@@ -368,12 +369,12 @@ onUnmounted(() => {
       <!-- Table -->
       <div
         class="border rounded-xl p-5"
-        :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'"
+        :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-zinc-900 border-zinc-800/40'"
       >
         <h3 class="text-sm font-semibold uppercase tracking-wider mb-3"
             :class="props.theme === 'light' ? 'text-gray-700' : 'text-white'">Details</h3>
         <div class="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-2 text-xs pb-2 border-b mb-2"
-             :class="props.theme === 'light' ? 'text-gray-400 border-gray-200' : 'text-gray-500 border-gray-800'">
+             :class="props.theme === 'light' ? 'text-gray-400 border-gray-200' : 'text-gray-500 border-zinc-800/50'">
           <span>Account</span>
           <span class="text-right">Provider</span>
           <span class="text-right">Requests</span>
@@ -387,7 +388,7 @@ onUnmounted(() => {
             v-for="a in accounts"
             :key="a.account_id"
             class="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-2 py-2 text-xs items-center"
-            :class="props.theme === 'light' ? 'hover:bg-gray-50' : 'hover:bg-gray-800/30'"
+            :class="props.theme === 'light' ? 'hover:bg-gray-50' : 'hover:bg-zinc-900/30'"
           >
             <div class="min-w-0">
               <span class="block font-medium truncate" :class="props.theme === 'light' ? 'text-gray-900' : 'text-white'">

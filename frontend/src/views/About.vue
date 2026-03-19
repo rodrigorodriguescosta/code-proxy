@@ -16,10 +16,10 @@ const version = 'v1.0.0'
     <div class="space-y-6 max-w-2xl">
       <!-- Project -->
       <div class="border rounded-xl p-6"
-           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
+           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-zinc-900 border-zinc-800/40'">
         <div class="flex items-center gap-3 mb-4">
-          <div class="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center">
-            <span class="text-orange-400 text-lg font-bold">CP</span>
+          <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+            <span class="text-blue-400 text-lg font-bold">CP</span>
           </div>
           <div>
             <h3 class="text-lg font-bold" :class="props.theme === 'light' ? 'text-gray-900' : 'text-white'">Code Proxy</h3>
@@ -35,12 +35,12 @@ const version = 'v1.0.0'
 
       <!-- Developer -->
       <div class="border rounded-xl p-6"
-           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
+           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-zinc-900 border-zinc-800/40'">
         <h3 class="text-sm font-semibold uppercase tracking-wider mb-4"
             :class="props.theme === 'light' ? 'text-gray-700' : 'text-white'">Developer</h3>
         <div class="flex items-start gap-4">
           <img src="https://github.com/rodrigorodriguescosta.png" alt="Rodrigo Rodrigues"
-               class="w-14 h-14 rounded-full ring-2 ring-orange-500/30" />
+               class="w-14 h-14 rounded-full ring-2 ring-blue-500/30" />
           <div>
             <p class="text-sm font-semibold" :class="props.theme === 'light' ? 'text-gray-900' : 'text-white'">Rodrigo Rodrigues</p>
             <p class="text-xs mt-0.5" :class="props.theme === 'light' ? 'text-gray-500' : 'text-gray-400'">
@@ -70,7 +70,7 @@ const version = 'v1.0.0'
 
       <!-- Important Notes -->
       <div class="border rounded-xl p-6"
-           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
+           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-zinc-900 border-zinc-800/40'">
         <h3 class="text-sm font-semibold uppercase tracking-wider mb-4"
             :class="props.theme === 'light' ? 'text-gray-700' : 'text-white'">Important Notes</h3>
 
@@ -130,7 +130,7 @@ const version = 'v1.0.0'
           <div class="rounded-lg p-4 border"
                :class="props.theme === 'light'
                  ? 'bg-gray-50 border-gray-200'
-                 : 'bg-gray-800/50 border-gray-700/50'">
+                 : 'bg-zinc-900/50 border-zinc-800/50'">
             <p class="text-sm font-semibold mb-1.5"
                :class="props.theme === 'light' ? 'text-gray-800' : 'text-gray-300'">
               CLI providers require the CLI tool installed
@@ -147,7 +147,7 @@ const version = 'v1.0.0'
 
       <!-- Tech Stack -->
       <div class="border rounded-xl p-6"
-           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
+           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-zinc-900 border-zinc-800/40'">
         <h3 class="text-sm font-semibold uppercase tracking-wider mb-3"
             :class="props.theme === 'light' ? 'text-gray-700' : 'text-white'">Built With</h3>
         <div class="flex flex-wrap gap-2">
@@ -156,7 +156,7 @@ const version = 'v1.0.0'
                 class="text-xs px-2.5 py-1 rounded-full"
                 :class="props.theme === 'light'
                   ? 'bg-gray-100 text-gray-600'
-                  : 'bg-gray-800 text-gray-400'">
+                  : 'bg-zinc-900 text-gray-400'">
             {{ tech }}
           </span>
         </div>

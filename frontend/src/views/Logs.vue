@@ -54,10 +54,11 @@ function timeAgo(t) {
 }
 
 function effortBadge(effort) {
+  const light = props.theme === 'light'
   switch (effort) {
-    case 'high': return { text: 'MAX', cls: 'bg-red-400/10 text-red-400' }
-    case 'medium': return { text: 'MED', cls: 'bg-yellow-400/10 text-yellow-400' }
-    case 'low': return { text: 'LOW', cls: 'bg-green-400/10 text-green-400' }
+    case 'high': return { text: 'MAX', cls: light ? 'bg-red-100 text-red-700' : 'bg-red-400/10 text-red-400' }
+    case 'medium': return { text: 'MED', cls: light ? 'bg-yellow-100 text-yellow-700' : 'bg-yellow-400/10 text-yellow-400' }
+    case 'low': return { text: 'LOW', cls: light ? 'bg-green-100 text-green-700' : 'bg-green-400/10 text-green-400' }
     default: return { text: '-', cls: 'text-gray-600' }
   }
 }
@@ -78,16 +79,16 @@ onMounted(load)
               class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
               :class="props.theme === 'light'
                 ? 'bg-gray-100 hover:bg-gray-200 text-gray-600'
-                : 'bg-gray-800 hover:bg-gray-700 text-gray-300'">
+                : 'bg-zinc-900 hover:bg-zinc-800 text-gray-300'">
         Refresh
       </button>
     </div>
 
     <div class="border rounded-xl overflow-hidden"
-         :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
+         :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-zinc-900 border-zinc-800/40'">
       <table class="w-full text-sm">
         <thead>
-          <tr class="border-b" :class="props.theme === 'light' ? 'border-gray-100' : 'border-gray-800'">
+          <tr class="border-b" :class="props.theme === 'light' ? 'border-gray-100' : 'border-zinc-800/50'">
             <th class="text-left px-4 py-3 text-xs uppercase tracking-wider font-medium"
                 :class="props.theme === 'light' ? 'text-gray-400' : 'text-gray-500'">Model</th>
             <th class="text-left px-4 py-3 text-xs uppercase tracking-wider font-medium"
@@ -117,7 +118,7 @@ onMounted(load)
               class="border-b transition-colors"
               :class="props.theme === 'light'
                 ? 'border-gray-50 hover:bg-gray-50/50'
-                : 'border-gray-800/50 hover:bg-gray-800/20'">
+                : 'border-zinc-800/50/50 hover:bg-zinc-900/20'">
             <td class="px-4 py-2.5">
               <span class="font-mono text-xs" :class="props.theme === 'light' ? 'text-gray-800' : 'text-white'">{{ log.model }}</span>
             </td>
@@ -149,7 +150,7 @@ onMounted(load)
 
       <!-- Pagination -->
       <div v-if="total > limit" class="flex items-center justify-between px-4 py-3 border-t"
-           :class="props.theme === 'light' ? 'border-gray-100' : 'border-gray-800'">
+           :class="props.theme === 'light' ? 'border-gray-100' : 'border-zinc-800/50'">
         <span class="text-xs" :class="props.theme === 'light' ? 'text-gray-400' : 'text-gray-500'">
           {{ page * limit + 1 }}-{{ Math.min((page + 1) * limit, total) }} of {{ fmtNum(total) }}
         </span>
@@ -158,14 +159,14 @@ onMounted(load)
                   class="px-3 py-1 rounded text-xs disabled:opacity-30 transition-colors"
                   :class="props.theme === 'light'
                     ? 'bg-gray-100 text-gray-500 hover:text-gray-700'
-                    : 'bg-gray-800 text-gray-400 hover:text-white'">
+                    : 'bg-zinc-900 text-gray-400 hover:text-white'">
             Previous
           </button>
           <button @click="nextPage" :disabled="(page + 1) * limit >= total"
                   class="px-3 py-1 rounded text-xs disabled:opacity-30 transition-colors"
                   :class="props.theme === 'light'
                     ? 'bg-gray-100 text-gray-500 hover:text-gray-700'
-                    : 'bg-gray-800 text-gray-400 hover:text-white'">
+                    : 'bg-zinc-900 text-gray-400 hover:text-white'">
             Next
           </button>
         </div>

@@ -108,10 +108,12 @@ onUnmounted(() => {
     <div v-else class="space-y-6">
       <!-- Status Card -->
       <div class="border rounded-xl p-6"
-           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
+           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-zinc-900 border-zinc-800/40'">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold" :class="props.theme === 'light' ? 'text-gray-900' : 'text-white'">Status</h3>
-          <span :class="status?.running ? 'text-green-400 bg-green-400/10' : 'text-gray-500 bg-gray-500/10'"
+          <span :class="status?.running
+                  ? (props.theme === 'light' ? 'text-green-700 bg-green-100' : 'text-green-400 bg-green-400/10')
+                  : (props.theme === 'light' ? 'text-gray-500 bg-gray-100' : 'text-gray-500 bg-gray-500/10')"
                 class="text-xs px-3 py-1 rounded-full font-medium">
             {{ status?.running ? 'Active' : 'Inactive' }}
           </span>
@@ -121,14 +123,14 @@ onUnmounted(() => {
           <label class="block text-sm mb-2" :class="props.theme === 'light' ? 'text-gray-500' : 'text-gray-400'">Public URL</label>
           <div class="flex items-center gap-2">
             <code class="flex-1 px-4 py-2 rounded-lg text-blue-400 text-sm font-mono truncate"
-                  :class="props.theme === 'light' ? 'bg-gray-50' : 'bg-gray-950'">
+                  :class="props.theme === 'light' ? 'bg-gray-50' : 'bg-zinc-950'">
               {{ status.url }}
             </code>
             <button @click="copyURL"
                     class="px-3 py-2 rounded-lg text-sm transition-colors"
                     :class="props.theme === 'light'
                       ? 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                      : 'bg-gray-700 hover:bg-gray-600 text-white'">
+                      : 'bg-zinc-800 hover:bg-zinc-700 text-white'">
               Copy
             </button>
           </div>
@@ -152,15 +154,16 @@ onUnmounted(() => {
 
       <!-- Token Configuration -->
       <div class="border rounded-xl p-6"
-           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
+           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-zinc-900 border-zinc-800/40'">
         <h3 class="text-lg font-semibold mb-3" :class="props.theme === 'light' ? 'text-gray-900' : 'text-white'">Tunnel Token (Fixed URL)</h3>
         <p class="text-sm mb-4" :class="props.theme === 'light' ? 'text-gray-500' : 'text-gray-400'">
           Configure a Cloudflare Zero Trust token for a fixed URL that persists across restarts.
         </p>
 
         <div v-if="tokenInfo?.has_token" class="mb-4">
-          <div class="flex items-center gap-3 bg-green-900/20 border border-green-700/30 rounded-lg p-3">
-            <span class="text-green-400 text-sm font-medium">Token configured</span>
+          <div class="flex items-center gap-3 rounded-lg p-3"
+               :class="props.theme === 'light' ? 'bg-green-50 border border-green-200' : 'bg-green-900/20 border border-green-700/30'">
+            <span class="text-sm font-medium" :class="props.theme === 'light' ? 'text-green-700' : 'text-green-400'">Token configured</span>
             <code class="text-green-300/70 text-xs font-mono">{{ tokenInfo.masked }}</code>
             <button @click="removeToken"
                     :disabled="savingToken"
@@ -186,7 +189,7 @@ onUnmounted(() => {
                  class="w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
                  :class="props.theme === 'light'
                    ? 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
-                   : 'bg-gray-950 border-gray-700 text-white placeholder-gray-600'" />
+                   : 'bg-zinc-950 border-zinc-800 text-white placeholder-gray-600'" />
           <div class="flex gap-2">
             <button @click="saveToken"
                     :disabled="savingToken || !tokenInput.trim()"
@@ -197,7 +200,7 @@ onUnmounted(() => {
                     class="px-4 py-2 rounded-lg text-sm transition-colors"
                     :class="props.theme === 'light'
                       ? 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                      : 'bg-gray-700 hover:bg-gray-600 text-white'">
+                      : 'bg-zinc-800 hover:bg-zinc-700 text-white'">
               Cancel
             </button>
           </div>
@@ -207,27 +210,27 @@ onUnmounted(() => {
                 class="px-4 py-2 rounded-lg text-sm transition-colors"
                 :class="props.theme === 'light'
                   ? 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                  : 'bg-gray-700 hover:bg-gray-600 text-white'">
+                  : 'bg-zinc-800 hover:bg-zinc-700 text-white'">
           {{ tokenInfo?.has_token ? 'Change Token' : 'Configure Token' }}
         </button>
       </div>
 
       <!-- How to use -->
       <div class="border rounded-xl p-6"
-           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
+           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-zinc-900 border-zinc-800/40'">
         <h3 class="text-lg font-semibold mb-3" :class="props.theme === 'light' ? 'text-gray-900' : 'text-white'">How to Use</h3>
         <div class="space-y-3 text-sm" :class="props.theme === 'light' ? 'text-gray-500' : 'text-gray-400'">
           <p>The Cloudflare tunnel creates a public URL for your local proxy, allowing use of Cursor/IDEs from anywhere.</p>
 
           <div class="rounded-lg p-4 font-mono text-sm"
-               :class="props.theme === 'light' ? 'bg-gray-50 text-gray-600' : 'bg-gray-950 text-gray-300'">
+               :class="props.theme === 'light' ? 'bg-gray-50 text-gray-600' : 'bg-zinc-950 text-gray-300'">
             <p :class="props.theme === 'light' ? 'text-gray-400' : 'text-gray-500'" class="mb-2"># In remote Cursor, configure:</p>
             <p>OpenAI Base URL: <span class="text-blue-400">{{ status?.url || 'https://xxx.trycloudflare.com' }}/v1</span></p>
             <p>API Key: <span class="text-blue-400">(your API key)</span></p>
           </div>
 
           <div class="rounded-lg p-4 text-sm"
-               :class="props.theme === 'light' ? 'bg-gray-50' : 'bg-gray-950'">
+               :class="props.theme === 'light' ? 'bg-gray-50' : 'bg-zinc-950'">
             <p class="font-semibold mb-2" :class="props.theme === 'light' ? 'text-gray-700' : 'text-gray-300'">How to get a token for a fixed URL:</p>
             <ol class="list-decimal list-inside space-y-1" :class="props.theme === 'light' ? 'text-gray-500' : 'text-gray-400'">
               <li>Go to <a href="https://one.dash.cloudflare.com" target="_blank" class="text-blue-400 hover:underline">Cloudflare Zero Trust</a></li>
