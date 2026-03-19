@@ -53,6 +53,7 @@ const nav = [
   { path: '/tunnel', label: 'Tunnel' },
   { path: '/logs', label: 'Logs' },
   { path: '/settings', label: 'Settings' },
+  { path: '/about', label: 'About' },
 ]
 </script>
 
@@ -63,9 +64,7 @@ const nav = [
     <div class="w-80 p-6 rounded-xl border"
          :class="theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
       <div class="flex items-center gap-2 mb-6">
-        <div class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center">
-          <span class="text-orange-400 text-sm font-bold">CP</span>
-        </div>
+        <img src="/favicon.svg" alt="CP" class="w-8 h-8 rounded-lg" />
         <h1 class="text-lg font-bold" :class="theme === 'light' ? 'text-gray-900' : 'text-white'">Code Proxy</h1>
       </div>
       <form @submit.prevent="doLogin" class="space-y-4">
@@ -91,9 +90,7 @@ const nav = [
            :class="theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
       <div class="p-4 border-b" :class="theme === 'light' ? 'border-gray-200' : 'border-gray-800'">
         <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-lg bg-orange-500/20 flex items-center justify-center">
-            <span class="text-orange-400 text-xs font-bold">CP</span>
-          </div>
+          <img src="/favicon.svg" alt="CP" class="w-7 h-7 rounded-lg" />
           <div>
             <h1 class="text-sm font-bold leading-tight" :class="theme === 'light' ? 'text-gray-900' : 'text-white'">Code Proxy</h1>
             <p class="text-[10px]" :class="theme === 'light' ? 'text-gray-400' : 'text-gray-500'">v1.0.0</p>

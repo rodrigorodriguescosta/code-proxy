@@ -13,6 +13,7 @@ const router = createRouter({
     { path: '/logs', component: () => import('./views/Logs.vue') },
     { path: '/settings', component: () => import('./views/Settings.vue') },
     { path: '/accounts', component: () => import('./views/AccountUsage.vue') },
+    { path: '/about', component: () => import('./views/About.vue') },
   ],
 })
 
