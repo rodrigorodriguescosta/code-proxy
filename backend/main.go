@@ -73,11 +73,13 @@ func main() {
 	// Tunnel manager
 	tunnelMgr := tunnel.NewManager(cfg.Port, cfg.DataDir, func(url string) {
 		if db != nil {
-			if url != "" {
-				db.SetSetting("tunnel_url", url)
+			db.SetSetting("tunnel_url", url)
+		}
+	}, func(enabled bool) {
+		if db != nil {
+			if enabled {
 				db.SetSetting("tunnel_enabled", "true")
 			} else {
-				db.SetSetting("tunnel_url", "")
 				db.SetSetting("tunnel_enabled", "false")
 			}
 		}

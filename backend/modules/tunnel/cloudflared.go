@@ -26,13 +26,15 @@ type Manager struct {
 	binDir    string
 	token     string // Cloudflare tunnel token for persistent tunnels
 	onURL     func(string)
+	onState   func(enabled bool) // persists enabled/disabled state to DB
 }
 
-func NewManager(localPort string, dataDir string, onURL func(string)) *Manager {
+func NewManager(localPort string, dataDir string, onURL func(string), onState func(bool)) *Manager {
 	return &Manager{
 		localPort: localPort,
 		binDir:    filepath.Join(dataDir, "bin"),
 		onURL:     onURL,
+		onState:   onState,
 		token:     os.Getenv("TUNNEL_TOKEN"),
 	}
 }
@@ -102,6 +104,11 @@ func (m *Manager) Enable() error {
 	m.cmd = cmd
 	m.running = true
 	m.mu.Unlock()
+
+	// Persist enabled state so tunnel auto-starts on server restart
+	if m.onState != nil {
+		m.onState(true)
+	}
 
 	// Parse URL from stderr
 	urlCh := make(chan string, 1)
@@ -193,6 +200,9 @@ func (m *Manager) Disable() error {
 
 	if m.onURL != nil {
 		m.onURL("")
+	}
+	if m.onState != nil {
+		m.onState(false)
 	}
 
 	log.Println("[TUNNEL] Disabled")
