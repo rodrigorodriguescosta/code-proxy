@@ -16,8 +16,8 @@ const oauthProviders = ref([])
 const expandedModels = ref('')
 const providerModels = ref({})
 const copiedModelId = ref('')
-const editingAccountId = ref('')
-const editLabel = ref('')
+const editAccount = ref(null)
+const editForm = ref({ label: '', priority: 0 })
 const providerStatuses = ref([])
 const imgErrors = ref({})
 const testingAccount = ref('')
@@ -320,24 +320,32 @@ function copyToClipboard(text, modelId) {
   }
 }
 
-function startEditLabel(a) {
-  editingAccountId.value = a.id
-  editLabel.value = a.label || ''
+function openEditAccount(a) {
+  editAccount.value = a
+  editForm.value = { label: a.label || '', priority: a.priority || 0 }
 }
 
-async function saveAccountLabel() {
-  if (!editingAccountId.value) return
+function closeEditAccount() {
+  editAccount.value = null
+}
+
+async function saveEditAccount() {
+  if (!editAccount.value) return
   try {
-    await api.updateAccount(editingAccountId.value, { label: editLabel.value })
-    editingAccountId.value = ''
+    await api.updateAccount(editAccount.value.id, {
+      label: editForm.value.label,
+      priority: editForm.value.priority,
+    })
+    closeEditAccount()
     await load()
-  } catch {
-    editingAccountId.value = ''
+  } catch (e) {
+    console.error(e)
   }
 }
 
-function cancelEditLabel() {
-  editingAccountId.value = ''
+async function testEditAccount() {
+  if (!editAccount.value) return
+  await doTestAccount(editAccount.value)
 }
 
 onMounted(load)
@@ -434,22 +442,19 @@ onMounted(load)
             <div v-if="cat.key !== 'cli' && accountsForCatalog(c).length > 0" class="mt-3 pt-3 border-t space-y-1.5"
                  :class="props.theme === 'light' ? 'border-gray-100' : 'border-zinc-800/50'">
               <div v-for="a in accountsForCatalog(c)" :key="a.id"
-                   class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg transition-colors"
-                   :class="props.theme === 'light' ? 'hover:bg-gray-50' : 'hover:bg-zinc-900/50'">
+                   class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg transition-colors cursor-pointer"
+                   :class="props.theme === 'light' ? 'hover:bg-gray-50' : 'hover:bg-zinc-900/50'"
+                   @click="openEditAccount(a)">
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-1.5">
-                    <template v-if="editingAccountId === a.id">
-                      <input v-model="editLabel" @keyup.enter="saveAccountLabel" @keyup.escape="cancelEditLabel" @blur="saveAccountLabel"
-                             class="border rounded px-2 py-0.5 text-xs font-medium w-32 focus:outline-none"
-                             :class="props.theme === 'light' ? 'bg-white border-blue-400 text-gray-900' : 'bg-zinc-950 border-blue-500 text-white'" />
-                    </template>
-                    <template v-else>
-                      <span class="text-xs font-medium truncate cursor-pointer"
-                            :class="props.theme === 'light' ? 'text-gray-700' : 'text-gray-300'"
-                            @dblclick="startEditLabel(a)">{{ a.label || 'Unnamed' }}</span>
-                    </template>
+                    <span class="text-xs font-medium truncate"
+                          :class="props.theme === 'light' ? 'text-gray-700' : 'text-gray-300'">{{ a.label || 'Unnamed' }}</span>
                     <span :class="statusBadge(a).cls" class="text-[9px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap">
                       {{ statusBadge(a).text }}
+                    </span>
+                    <span v-if="a.priority > 0" class="text-[9px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap"
+                          :class="props.theme === 'light' ? 'bg-blue-100 text-blue-700' : 'bg-blue-500/10 text-blue-400'">
+                      P{{ a.priority }}
                     </span>
                   </div>
                   <!-- Test result -->
@@ -468,22 +473,7 @@ onMounted(load)
                           :class="props.theme === 'light' ? 'text-red-500' : 'text-red-400/70'" :title="a.last_error">{{ a.last_error }}</span>
                   </div>
                 </div>
-                <div class="flex items-center gap-1 shrink-0">
-                  <button @click="doTestAccount(a)"
-                          :disabled="testingAccount === a.id"
-                          class="text-[10px] px-1.5 py-0.5 rounded transition-colors disabled:opacity-50"
-                          :class="testingAccount === a.id
-                            ? 'text-blue-400 animate-pulse'
-                            : props.theme === 'light'
-                              ? 'text-gray-400 hover:text-blue-500 hover:bg-gray-100'
-                              : 'text-gray-500 hover:text-blue-400 hover:bg-zinc-900'"
-                          :title="testingAccount === a.id ? 'Testing...' : 'Test connection'">
-                    {{ testingAccount === a.id ? '...' : 'Test' }}
-                  </button>
-                  <button v-if="a.auth_mode === 'oauth'" @click="refreshAccountToken(a)"
-                          class="text-[10px] px-1 py-0.5 rounded transition-colors"
-                          :class="props.theme === 'light' ? 'text-gray-400 hover:text-blue-500 hover:bg-gray-100' : 'text-gray-500 hover:text-blue-400 hover:bg-zinc-900'"
-                          title="Refresh token">&#8635;</button>
+                <div class="flex items-center gap-1 shrink-0" @click.stop>
                   <button @click="toggleAccount(a)"
                           class="text-[10px] px-1.5 py-0.5 rounded transition-colors"
                           :class="props.theme === 'light' ? 'text-gray-400 hover:text-gray-700 hover:bg-gray-100' : 'text-gray-500 hover:text-white hover:bg-zinc-900'">
@@ -652,6 +642,88 @@ onMounted(load)
             <div v-if="oauthState?.error" class="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mt-3">
               <p class="text-red-400 text-sm">{{ oauthState.error }}</p>
               <button @click="oauthState = null" class="text-red-400 hover:text-red-300 text-xs mt-1 underline">Try again</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Edit Account Dialog -->
+      <div v-if="editAccount"
+           class="fixed inset-0 z-50 flex items-center justify-center p-4"
+           :class="props.theme === 'light' ? 'bg-black/30' : 'bg-black/60'"
+           @click.self="closeEditAccount">
+        <div class="w-full max-w-sm border rounded-xl p-5"
+             :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-zinc-900 border-zinc-800/50'">
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded flex items-center justify-center"
+                   :style="{ backgroundColor: getCatalogInfo(editAccount.provider_type).color + '20' }">
+                <span class="text-[10px] font-bold" :style="{ color: getCatalogInfo(editAccount.provider_type).color }">
+                  {{ getCatalogInfo(editAccount.provider_type).textIcon }}
+                </span>
+              </div>
+              <h3 class="text-sm font-semibold" :class="props.theme === 'light' ? 'text-gray-900' : 'text-white'">Edit Connection</h3>
+            </div>
+            <button @click="closeEditAccount"
+                    class="text-sm" :class="props.theme === 'light' ? 'text-gray-400 hover:text-gray-600' : 'text-gray-500 hover:text-white'">
+              &#10005;
+            </button>
+          </div>
+
+          <div class="space-y-4">
+            <!-- Name -->
+            <div>
+              <label class="block text-xs font-medium mb-1.5" :class="props.theme === 'light' ? 'text-gray-600' : 'text-gray-400'">Name</label>
+              <input v-model="editForm.label" placeholder="Account name"
+                     class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                     :class="props.theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900' : 'bg-zinc-950 border-zinc-800 text-white'" />
+            </div>
+
+            <!-- Priority -->
+            <div>
+              <label class="block text-xs font-medium mb-1.5" :class="props.theme === 'light' ? 'text-gray-600' : 'text-gray-400'">Priority</label>
+              <input v-model.number="editForm.priority" type="number" min="0" max="99"
+                     class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                     :class="props.theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900' : 'bg-zinc-950 border-zinc-800 text-white'" />
+              <p class="text-[10px] mt-1" :class="props.theme === 'light' ? 'text-gray-400' : 'text-gray-600'">
+                Lower number = higher priority. Accounts with same priority use fill-first order.
+              </p>
+            </div>
+
+            <!-- Test Connection -->
+            <button @click.stop="testEditAccount"
+                    :disabled="testingAccount === editAccount.id"
+                    class="w-full border rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+                    :class="testingAccount === editAccount.id
+                      ? 'opacity-50 cursor-wait'
+                      : props.theme === 'light'
+                        ? 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                        : 'border-zinc-800 text-gray-300 hover:bg-zinc-800'">
+              {{ testingAccount === editAccount.id ? 'Testing...' : 'Test Connection' }}
+            </button>
+            <!-- Test result inside dialog -->
+            <div v-if="testResults[editAccount.id]" class="rounded-lg p-2.5 text-xs"
+                 :class="testResults[editAccount.id].valid
+                   ? (props.theme === 'light' ? 'bg-green-50 text-green-700' : 'bg-green-500/10 text-green-400')
+                   : (props.theme === 'light' ? 'bg-red-50 text-red-600' : 'bg-red-500/10 text-red-400')">
+              <template v-if="testResults[editAccount.id].valid">
+                &#10003; Connected ({{ testResults[editAccount.id].latency_ms }}ms)
+              </template>
+              <template v-else>
+                &#10007; {{ testResults[editAccount.id].error }}
+              </template>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-3 pt-1">
+              <button @click="saveEditAccount"
+                      class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors">
+                Save
+              </button>
+              <button @click="closeEditAccount"
+                      class="text-sm" :class="props.theme === 'light' ? 'text-gray-500 hover:text-gray-700' : 'text-gray-400 hover:text-white'">
+                Cancel
+              </button>
             </div>
           </div>
         </div>
