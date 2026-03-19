@@ -1,0 +1,6 @@
+code-proxy
+*.db
+*.sqlite
+frontend/dist/
+node_modules/
+.claude/

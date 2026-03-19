@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/* Light theme overrides — applied when html has class "light" */
+.light {
+  --cp-bg: #f8fafc;
+  --cp-sidebar: #ffffff;
+  --cp-card: #ffffff;
+  --cp-card-alt: #f1f5f9;
+  --cp-border: #e2e8f0;
+  --cp-text: #1e293b;
+  --cp-text-secondary: #64748b;
+  --cp-text-muted: #94a3b8;
+  --cp-input-bg: #f1f5f9;
+  --cp-hover: #f1f5f9;
+}
+
+/* Dark theme (default) */
+:root {
+  --cp-bg: #030712;
+  --cp-sidebar: #111827;
+  --cp-card: #111827;
+  --cp-card-alt: #030712;
+  --cp-border: #1f2937;
+  --cp-text: #ffffff;
+  --cp-text-secondary: #9ca3af;
+  --cp-text-muted: #6b7280;
+  --cp-input-bg: #030712;
+  --cp-hover: #1f2937;
+}
