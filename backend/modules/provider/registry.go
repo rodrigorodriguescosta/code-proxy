@@ -143,6 +143,11 @@ func parseModelPrefix(model string) (providerType, cleanModel string) {
 
 	// Explicit prefixes
 	prefixes := map[string]string{
+		// CLI prefixes (local binary execution)
+		"cli-cc/":    "claude-cli",
+		"cli-codex/": "codex-cli",
+		"cli-gc/":    "gemini-cli",
+		// OAuth/API prefixes
 		"cc/":         "claude-cli",
 		"cx/":         "codex-cli",
 		"codex/":      "codex-cli",

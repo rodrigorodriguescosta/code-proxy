@@ -25,9 +25,9 @@ func (c *GeminiCLI) IsAvailable() bool  { return CLIBinaryAvailable("gemini") }
 
 func (c *GeminiCLI) Models() []Model {
 	return []Model{
-		{ID: "gc/gemini-2.5-pro", Name: "Gemini 2.5 Pro (CLI)", OwnedBy: "google"},
-		{ID: "gc/gemini-2.5-flash", Name: "Gemini 2.5 Flash (CLI)", OwnedBy: "google"},
-		{ID: "gc/gemini-2.0-flash", Name: "Gemini 2.0 Flash (CLI)", OwnedBy: "google"},
+		{ID: "cli-gc/gemini-2.5-pro", Name: "Gemini 2.5 Pro (CLI)", OwnedBy: "google"},
+		{ID: "cli-gc/gemini-2.5-flash", Name: "Gemini 2.5 Flash (CLI)", OwnedBy: "google"},
+		{ID: "cli-gc/gemini-2.0-flash", Name: "Gemini 2.0 Flash (CLI)", OwnedBy: "google"},
 	}
 }
 
