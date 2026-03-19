@@ -36,9 +36,9 @@ func (c *Claude) Models() []Model {
 	}
 }
 
-// Execute implementa Provider.Execute — spawns claude CLI com stream-json
+// Execute implements Provider.Execute — spawns claude CLI with stream-json output
 func (c *Claude) Execute(ctx context.Context, req *Request) (<-chan Event, error) {
-	// Extrair prompt do RawBody OpenAI
+	// Extract prompt from OpenAI RawBody
 	systemPrompt, prompt := ExtractPrompt(req.RawBody)
 	model := req.Model
 	effort := req.Effort
@@ -181,7 +181,7 @@ func (c *Claude) Execute(ctx context.Context, req *Request) (<-chan Event, error
 						seenToolIDs[block.ID] = true
 						log.Printf("[CLAUDE] Tool: %s (id=%s)", block.Name, block.ID)
 
-						// Track arquivos alterados
+						// Track edited files
 						if block.Name == "Edit" || block.Name == "Write" {
 							var fp struct {
 								FilePath string `json:"file_path"`
@@ -225,16 +225,16 @@ func (c *Claude) Execute(ctx context.Context, req *Request) (<-chan Event, error
 					events <- Event{Type: "text", Text: errMsg}
 				}
 
-				// Resumo de arquivos alterados
+				// Summary of edited files
 				if len(editedFiles) > 0 || len(createdFiles) > 0 {
 					var summary strings.Builder
 					total := len(editedFiles) + len(createdFiles)
-					summary.WriteString(fmt.Sprintf("\n\n---\n**%d arquivo(s) modificado(s):**\n", total))
+					summary.WriteString(fmt.Sprintf("\n\n---\n**%d file(s) modified:**\n", total))
 					for _, f := range createdFiles {
-						summary.WriteString(fmt.Sprintf("- `%s` *(novo)*\n", shortPath(f)))
+						summary.WriteString(fmt.Sprintf("- `%s` *(new)*\n", shortPath(f)))
 					}
 					for _, f := range editedFiles {
-						summary.WriteString(fmt.Sprintf("- `%s` *(editado)*\n", shortPath(f)))
+						summary.WriteString(fmt.Sprintf("- `%s` *(edited)*\n", shortPath(f)))
 					}
 					summary.WriteString("---")
 					events <- Event{Type: "text", Text: summary.String()}
@@ -290,7 +290,7 @@ type contentBlock struct {
 }
 
 // formatToolUse converts a tool_use block into formatted text for the response.
-// Formato inspirado no Claude Code VSCode extension.
+// Format inspired by the Claude Code VSCode extension.
 func formatToolUse(name string, input json.RawMessage) string {
 	switch name {
 	case "Edit":
@@ -307,12 +307,12 @@ func formatToolUse(name string, input json.RawMessage) string {
 			old := prefixDiffLines(inp.OldString, "- ")
 			new := prefixDiffLines(inp.NewString, "+ ")
 
-			// Code block com path que Cursor pode reconhecer para "Apply"
+			// Code block with path that Cursor can recognize for "Apply"
 			lang := detectLang(inp.FilePath)
 			var b strings.Builder
 			b.WriteString(fmt.Sprintf("#### Edit `%s` %s\n", fname, stats))
 			b.WriteString(fmt.Sprintf("```diff\n%s%s```\n", old, new))
-			// Bloco com filepath label para Cursor detectar
+			// Block with filepath label for Cursor to detect
 			b.WriteString(fmt.Sprintf("```%s:%s\n%s\n```", lang, inp.FilePath, inp.NewString))
 			return b.String()
 		}
@@ -431,7 +431,7 @@ func formatToolUse(name string, input json.RawMessage) string {
 				case "completed":
 					b.WriteString("- [x] ~~" + t.Content + "~~\n")
 				case "in_progress":
-					b.WriteString("- [ ] **" + t.Content + "** *(em progresso)*\n")
+					b.WriteString("- [ ] **" + t.Content + "** *(in progress)*\n")
 				default:
 					b.WriteString("- [ ] " + t.Content + "\n")
 				}

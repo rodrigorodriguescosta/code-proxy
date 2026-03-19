@@ -6,7 +6,7 @@ tmp_dir = "tmp"
   bin = "./tmp/code-proxy"
   full_bin = "./tmp/code-proxy"
   include_ext = ["go", "toml"]
-  exclude_dir = ["tmp", "frontend", "frontend-src", "node_modules"]
+  exclude_dir = ["tmp", "embed"]
   delay = 1000
 
 [log]

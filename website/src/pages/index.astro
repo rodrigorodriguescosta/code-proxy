@@ -1,0 +1,507 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Code Proxy — One proxy, all AI coding agents">
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/code-proxy/" class="logo">
+        <span class="logo-icon">&#9655;</span> code-proxy
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#install">Install</a>
+        <a href="https://github.com/rodrigorodriguescosta/code-proxy" class="btn-nav">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge">Open Source</div>
+    <h1>One proxy.<br/>All AI coding agents.</h1>
+    <p class="hero-sub">
+      Use <strong>Claude Code</strong>, <strong>OpenAI Codex</strong>, <strong>Gemini</strong> and 10+ providers
+      through <strong>Cursor</strong> or any OpenAI-compatible client.
+      Centralize subscriptions, track usage, control access.
+    </p>
+    <div class="hero-actions">
+      <a href="#install" class="btn-primary">Get Started</a>
+      <a href="https://github.com/rodrigorodriguescosta/code-proxy" class="btn-secondary">View on GitHub</a>
+    </div>
+    <pre class="hero-code"><code><span class="dim"># Start the proxy</span>
+code-proxy
+
+<span class="dim"># Point Cursor at it</span>
+Base URL: http://localhost:3456/v1
+
+<span class="dim"># Pick any model — prefix selects the provider</span>
+cc/claude-sonnet-4-6      <span class="dim"># Claude Code agent (subscription)</span>
+codex/5.3                 <span class="dim"># Codex agent (subscription)</span>
+anthropic/claude-opus-4-6 <span class="dim"># Anthropic API (pay-per-token)</span>
+openai/gpt-5.3            <span class="dim"># OpenAI API (pay-per-token)</span></code></pre>
+  </section>
+
+  <!-- Why -->
+  <section class="section" id="how-it-works">
+    <h2 class="section-title">CLI subscription vs API tokens</h2>
+    <p class="section-sub">
+      AI coding tools have two fundamentally different modes.
+      Code Proxy lets you use both through a single endpoint.
+    </p>
+
+    <div class="comparison">
+      <div class="comp-card">
+        <div class="comp-label cli-label">CLI Mode (Subscription)</div>
+        <div class="comp-icon">&#9881;</div>
+        <h3>Full Code Agent</h3>
+        <p>Spawns the actual <code>claude</code> or <code>codex</code> binary. The AI reads your files, runs commands, edits code. Uses your <strong>subscription</strong> — not API tokens.</p>
+        <div class="comp-models">
+          <span>cc/claude-sonnet-4-6</span>
+          <span>codex/5.3</span>
+          <span>gc/gemini-2.5-pro</span>
+        </div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-label api-label">API Mode (Pay-per-token)</div>
+        <div class="comp-icon">&#9889;</div>
+        <h3>Chat Only</h3>
+        <p>Direct HTTP to provider API. Answers questions, reviews code. Uses <strong>API keys or OAuth</strong> — pay per token consumed.</p>
+        <div class="comp-models">
+          <span>anthropic/claude-opus-4-6</span>
+          <span>openai/gpt-5.3</span>
+          <span>gemini/gemini-2.5-pro</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <h2 class="section-title">Everything you need</h2>
+    <div class="features-grid">
+      <div class="feature">
+        <div class="feature-icon">&#128279;</div>
+        <h3>Unified endpoint</h3>
+        <p>Claude, GPT, Gemini, DeepSeek, Groq, Together, Ollama — all through <code>/v1/chat/completions</code>.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128101;</div>
+        <h3>Multi-account pooling</h3>
+        <p>Connect multiple accounts per provider. Auto round-robin, cooldown on rate limits, automatic OAuth token refresh.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128202;</div>
+        <h3>Usage analytics</h3>
+        <p>Track requests, tokens, and estimated costs per model, per account, per API key. Full request log with filtering.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128273;</div>
+        <h3>Access control</h3>
+        <p>Create API keys for team members, toggle or revoke access instantly. Dashboard password protection.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#127760;</div>
+        <h3>Cloudflare tunnel</h3>
+        <p>Built-in tunnel support. Share with your team without port forwarding or nginx. One click in the dashboard.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#9889;</div>
+        <h3>Effort levels</h3>
+        <p>Append <code>:low</code> to <code>:max</code> to any CLI model to control how thoroughly the agent works.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Providers -->
+  <section class="section">
+    <h2 class="section-title">Supported providers</h2>
+    <div class="providers">
+      <div class="provider"><span class="prov-dot" style="background:#fb923c"></span> Claude Code <span class="prov-tag">CLI</span></div>
+      <div class="provider"><span class="prov-dot" style="background:#fb923c"></span> Anthropic API <span class="prov-tag">API</span></div>
+      <div class="provider"><span class="prov-dot" style="background:#34d399"></span> OpenAI Codex <span class="prov-tag">CLI</span></div>
+      <div class="provider"><span class="prov-dot" style="background:#34d399"></span> OpenAI API <span class="prov-tag">API</span></div>
+      <div class="provider"><span class="prov-dot" style="background:#60a5fa"></span> Gemini CLI <span class="prov-tag">CLI</span></div>
+      <div class="provider"><span class="prov-dot" style="background:#60a5fa"></span> Gemini API <span class="prov-tag">API</span></div>
+      <div class="provider"><span class="prov-dot" style="background:#22d3ee"></span> DeepSeek <span class="prov-tag">API</span></div>
+      <div class="provider"><span class="prov-dot" style="background:#a78bfa"></span> Groq <span class="prov-tag">API</span></div>
+      <div class="provider"><span class="prov-dot" style="background:#f472b6"></span> Together <span class="prov-tag">API</span></div>
+      <div class="provider"><span class="prov-dot" style="background:#9ca3af"></span> Ollama <span class="prov-tag">Local</span></div>
+      <div class="provider"><span class="prov-dot" style="background:#9ca3af"></span> Any OpenAI-compatible <span class="prov-tag">API</span></div>
+    </div>
+  </section>
+
+  <!-- Install -->
+  <section class="section" id="install">
+    <h2 class="section-title">Get started in 60 seconds</h2>
+
+    <div class="install-grid">
+      <div class="install-card">
+        <h3>From source</h3>
+        <pre><code>git clone https://github.com/rodrigorodriguescosta/code-proxy.git
+cd code-proxy
+go build -o code-proxy .
+./code-proxy</code></pre>
+      </div>
+
+      <div class="install-card">
+        <h3>Go install</h3>
+        <pre><code>go install github.com/rodrigorodriguescosta/code-proxy@latest
+code-proxy</code></pre>
+      </div>
+
+      <div class="install-card">
+        <h3>Download binary</h3>
+        <pre><code><span class="dim"># Grab from GitHub Releases</span>
+wget .../code-proxy-linux-amd64
+chmod +x code-proxy-linux-amd64
+./code-proxy-linux-amd64</code></pre>
+      </div>
+
+      <div class="install-card">
+        <h3>Deploy on VPS</h3>
+        <pre><code><span class="dim"># Single binary, no dependencies</span>
+export PORT=3456
+export PROXY_REQUIRE_API_KEY=true
+./code-proxy
+
+<span class="dim"># Built-in Cloudflare tunnel</span>
+<span class="dim"># Enable in Dashboard → Settings</span></code></pre>
+      </div>
+    </div>
+
+    <div class="cursor-setup">
+      <h3>Configure Cursor</h3>
+      <div class="steps">
+        <div class="step">
+          <span class="step-num">1</span>
+          <span>Open dashboard at <code>http://localhost:3456</code> — connect your accounts</span>
+        </div>
+        <div class="step">
+          <span class="step-num">2</span>
+          <span>Cursor → Settings → Models → set Base URL to <code>http://localhost:3456/v1</code></span>
+        </div>
+        <div class="step">
+          <span class="step-num">3</span>
+          <span>Pick a model with the right prefix — done!</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>
+      Code Proxy is open source under the MIT license.
+      <a href="https://github.com/rodrigorodriguescosta/code-proxy">GitHub</a>
+    </p>
+  </footer>
+</Layout>
+
+<style>
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .logo:hover { text-decoration: none; }
+  .logo-icon { color: var(--accent-light); font-size: 1.2rem; }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    font-size: 0.875rem;
+  }
+  .nav-links a { color: var(--text-muted); }
+  .nav-links a:hover { color: var(--text); text-decoration: none; }
+  .btn-nav {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    color: var(--text) !important;
+    font-weight: 500;
+    transition: border-color 0.2s;
+  }
+  .btn-nav:hover { border-color: var(--border-accent); }
+
+  .hero {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 8rem 1.5rem 4rem;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--green);
+    background: rgba(52, 211, 153, 0.1);
+    border: 1px solid rgba(52, 211, 153, 0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.25rem;
+    background: linear-gradient(to bottom right, #fff, #888);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    line-height: 1.7;
+  }
+  .hero-sub strong { color: var(--text); font-weight: 600; }
+  .hero-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-bottom: 3rem;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    padding: 0.65rem 1.75rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover { background: var(--accent-light); text-decoration: none; }
+  .btn-secondary {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.65rem 1.75rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--border-accent); text-decoration: none; }
+  .hero-code {
+    text-align: left;
+    max-width: 580px;
+    margin: 0 auto;
+  }
+  .hero-code .dim { color: var(--text-dim); }
+
+  .section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 5rem 1.5rem;
+  }
+  .section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.02em;
+  }
+  .section-sub {
+    text-align: center;
+    color: var(--text-muted);
+    max-width: 550px;
+    margin: 0 auto 3rem;
+    font-size: 1.05rem;
+  }
+
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  @media (max-width: 640px) { .comparison { grid-template-columns: 1fr; } }
+  .comp-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+  }
+  .comp-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+  .cli-label { color: var(--orange); background: rgba(251, 146, 60, 0.1); }
+  .api-label { color: var(--cyan); background: rgba(34, 211, 238, 0.1); }
+  .comp-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .comp-card h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .comp-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; }
+  .comp-models { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .comp-models span {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    color: var(--text-muted);
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+  @media (max-width: 768px) { .features-grid { grid-template-columns: 1fr; } }
+  .feature {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem;
+    transition: border-color 0.2s;
+  }
+  .feature:hover { border-color: var(--border-accent); }
+  .feature-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .feature h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+  .feature p { color: var(--text-muted); font-size: 0.875rem; line-height: 1.6; }
+
+  .providers {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .provider {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .prov-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .prov-tag {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    background: var(--bg);
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+  }
+
+  .install-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+  }
+  @media (max-width: 640px) { .install-grid { grid-template-columns: 1fr; } }
+  .install-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .install-card h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+  }
+  .install-card pre {
+    margin: 0;
+    font-size: 0.8rem;
+    border: none;
+    background: var(--bg);
+  }
+
+  .cursor-setup {
+    background: var(--bg-card);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 650px;
+    margin: 0 auto;
+    box-shadow: 0 0 40px var(--accent-glow);
+  }
+  .cursor-setup h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    text-align: center;
+  }
+  .steps { display: flex; flex-direction: column; gap: 0.75rem; }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  .step-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .footer {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border);
+  }
+</style>

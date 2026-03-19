@@ -43,14 +43,14 @@ func (c *ClaudeACP) Models() []Model {
 	}
 }
 
-// Execute implementa Provider.Execute — envia prompt via ACP
+// Execute implements Provider.Execute — sends prompt via ACP
 func (c *ClaudeACP) Execute(ctx context.Context, req *Request) (<-chan Event, error) {
-	// Extrair prompt do RawBody OpenAI
+	// Extract prompt from OpenAI RawBody
 	systemPrompt, prompt := ExtractPrompt(req.RawBody)
 	model := req.Model
 	effort := req.Effort
 
-	// Criar session
+	// Create session
 	sess, err := c.manager.getSession(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("ACP session: %w", err)
@@ -58,7 +58,7 @@ func (c *ClaudeACP) Execute(ctx context.Context, req *Request) (<-chan Event, er
 
 	events := sess.eventCh
 
-	// Montar conteúdo do prompt
+	// Build prompt content
 	var promptText string
 	if systemPrompt != "" {
 		promptText = fmt.Sprintf("[System Instructions]\n%s\n[End System Instructions]\n\n%s", systemPrompt, prompt)
@@ -68,12 +68,12 @@ func (c *ClaudeACP) Execute(ctx context.Context, req *Request) (<-chan Event, er
 
 	log.Printf("[ACP] Prompt: model=%s, effort=%s, %d chars", model, effort, len(promptText))
 
-	// Enviar prompt em goroutine (bloqueia até agent terminar)
+	// Send prompt in goroutine (blocks until agent finishes)
 	go func() {
 		defer close(events)
 		defer c.manager.releaseSession(sess.sessionID)
 
-		// Enviar prompt
+		// Send prompt
 		conn := c.manager.conn
 		if conn == nil {
 			events <- Event{Type: "error", Text: "ACP connection lost"}
@@ -97,7 +97,7 @@ func (c *ClaudeACP) Execute(ctx context.Context, req *Request) (<-chan Event, er
 	return events, nil
 }
 
-// Shutdown encerra o subprocess ACP
+// Shutdown terminates the ACP subprocess
 func (c *ClaudeACP) Shutdown() {
 	c.manager.shutdown()
 }

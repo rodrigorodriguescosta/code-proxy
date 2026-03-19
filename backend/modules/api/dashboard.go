@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"code-proxy/account"
-	"code-proxy/database"
-	"code-proxy/provider"
+	"code-proxy/modules/account"
+	"code-proxy/modules/database"
+	"code-proxy/modules/provider"
 )
 
 func registerDashboardRoutes(mux *http.ServeMux, db *database.DB, acctMgr *account.Manager, registry *provider.Registry) {

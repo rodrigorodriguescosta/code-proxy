@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"code-proxy/database"
-	"code-proxy/provider"
+	"code-proxy/modules/database"
+	"code-proxy/modules/provider"
 )
 
 // Manager manages account selection, cooldown and refresh

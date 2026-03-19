@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"strings"
 
-	"code-proxy/account"
-	"code-proxy/database"
-	"code-proxy/provider"
-	"code-proxy/tunnel"
+	"code-proxy/modules/account"
+	"code-proxy/modules/database"
+	"code-proxy/modules/provider"
+	"code-proxy/modules/tunnel"
 )
 
 type Server struct {

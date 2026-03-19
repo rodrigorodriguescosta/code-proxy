@@ -87,8 +87,8 @@ function supportsOAuth(providerType) {
 }
 
 function colorClasses(color) {
-  // Tailwind não gera classes quando elas são construídas dinamicamente (bg-${...}).
-  // Mantemos o mapeamento explícito para garantir que ícones/cores apareçam no build.
+  // Tailwind doesn't generate classes when they are built dynamically (bg-${...}).
+  // We keep the explicit mapping to ensure icons/colors appear in the build.
   switch (color) {
     case 'orange':
       return 'bg-orange-500/20 text-orange-400'

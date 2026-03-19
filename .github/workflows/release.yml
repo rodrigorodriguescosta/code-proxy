@@ -21,12 +21,10 @@ jobs:
       - name: Get latest tag
         id: get_tag
         run: |
-          # Pegar a tag mais recente, se não existir começa em v1.0.0
           LATEST_TAG=$(git tag --sort=-v:refname | head -n 1)
           if [ -z "$LATEST_TAG" ]; then
             NEW_TAG="v1.0.0"
           else
-            # Incrementar patch version
             MAJOR=$(echo "$LATEST_TAG" | sed 's/v//' | cut -d. -f1)
             MINOR=$(echo "$LATEST_TAG" | sed 's/v//' | cut -d. -f2)
             PATCH=$(echo "$LATEST_TAG" | sed 's/v//' | cut -d. -f3)
@@ -35,7 +33,7 @@ jobs:
           fi
           echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
           echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
-          echo "Nova tag: $NEW_TAG (anterior: ${LATEST_TAG:-nenhuma})"
+          echo "New tag: $NEW_TAG (previous: ${LATEST_TAG:-none})"
 
       - name: Generate changelog
         id: changelog
@@ -46,7 +44,6 @@ jobs:
           else
             LOG=$(git log "${LATEST_TAG}..HEAD" --oneline --no-decorate)
           fi
-          # Escapar para uso em multiline output
           echo "log<<EOF" >> $GITHUB_OUTPUT
           echo "$LOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -58,20 +55,31 @@ jobs:
           git tag ${{ steps.get_tag.outputs.new_tag }}
           git push origin ${{ steps.get_tag.outputs.new_tag }}
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm ci && npm run build
+
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          go-version-file: backend/go.mod
           cache: true
+          cache-dependency-path: backend/go.sum
 
       - name: Build binaries
+        working-directory: backend
         run: |
-          mkdir -p dist
-          GOOS=linux   GOARCH=amd64 go build -o dist/code-proxy-linux-amd64   .
-          GOOS=linux   GOARCH=arm64 go build -o dist/code-proxy-linux-arm64   .
-          GOOS=darwin  GOARCH=amd64 go build -o dist/code-proxy-darwin-amd64  .
-          GOOS=darwin  GOARCH=arm64 go build -o dist/code-proxy-darwin-arm64  .
-          GOOS=windows GOARCH=amd64 go build -o dist/code-proxy-windows-amd64.exe .
+          mkdir -p ../dist
+          GOOS=linux   GOARCH=amd64 go build -o ../dist/code-proxy-linux-amd64   .
+          GOOS=linux   GOARCH=arm64 go build -o ../dist/code-proxy-linux-arm64   .
+          GOOS=darwin  GOARCH=amd64 go build -o ../dist/code-proxy-darwin-amd64  .
+          GOOS=darwin  GOARCH=arm64 go build -o ../dist/code-proxy-darwin-arm64  .
+          GOOS=windows GOARCH=amd64 go build -o ../dist/code-proxy-windows-amd64.exe .
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -79,7 +87,7 @@ jobs:
           tag_name: ${{ steps.get_tag.outputs.new_tag }}
           name: Release ${{ steps.get_tag.outputs.new_tag }}
           body: |
-            ## Mudanças nesta versão
+            ## Changes in this release
 
             ${{ steps.changelog.outputs.log }}
           files: dist/*

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"code-proxy/database"
+	"code-proxy/modules/database"
 )
 
 type contextKey string

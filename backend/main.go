@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
-	"code-proxy/account"
-	"code-proxy/api"
-	"code-proxy/config"
-	"code-proxy/database"
-	"code-proxy/frontend"
-	"code-proxy/provider"
-	"code-proxy/tunnel"
+	"code-proxy/embed"
+	"code-proxy/modules/account"
+	"code-proxy/modules/api"
+	"code-proxy/modules/config"
+	"code-proxy/modules/database"
+	"code-proxy/modules/provider"
+	"code-proxy/modules/tunnel"
 )
 
 func main() {
@@ -84,7 +84,7 @@ func main() {
 	})
 
 	// Create server
-	frontendFS := frontend.FS()
+	frontendFS := embed.FS()
 	server := api.NewServer(api.ServerOptions{
 		Registry:     registry,
 		AccountMgr:   acctMgr,

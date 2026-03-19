@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"code-proxy/account"
-	"code-proxy/auth"
-	"code-proxy/database"
-	"code-proxy/provider"
+	"code-proxy/modules/account"
+	"code-proxy/modules/auth"
+	"code-proxy/modules/database"
+	"code-proxy/modules/provider"
 )
 
 // oauthFlows is the global OAuth flow manager
@@ -227,7 +227,7 @@ func refreshAccount(w http.ResponseWriter, db *database.DB, id string) {
 		return
 	}
 
-	// Determinar provider para buscar config OAuth
+	// Determine provider to fetch OAuth config
 	providerName := mapProviderTypeToOAuth(acct.ProviderType)
 	cfg, ok := auth.GetConfig(providerName)
 	if !ok {
@@ -241,7 +241,7 @@ func refreshAccount(w http.ResponseWriter, db *database.DB, id string) {
 		return
 	}
 
-	// Atualizar no banco
+	// Update in database
 	expiresAt := tokens.ExpiresAt
 	if err := db.UpdateAccountTokens(id, tokens.AccessToken, tokens.RefreshToken, &expiresAt); err != nil {
 		writeError(w, err.Error(), http.StatusInternalServerError)
@@ -266,7 +266,7 @@ func startOAuth(w http.ResponseWriter, r *http.Request, db *database.DB) {
 		return
 	}
 
-	// Mapear provider_type para nome OAuth
+	// Map provider_type to OAuth config name
 	providerName := mapProviderTypeToOAuth(req.ProviderType)
 	if providerName == "" {
 		providerName = req.ProviderType
@@ -354,7 +354,7 @@ func handleOAuthCallback(w http.ResponseWriter, r *http.Request, db *database.DB
 	json.NewEncoder(w).Encode(acct)
 }
 
-// mapProviderTypeToOAuth mapeia tipo de provider para nome de config OAuth
+// mapProviderTypeToOAuth maps provider type to OAuth config name
 func mapProviderTypeToOAuth(providerType string) string {
 	mapping := map[string]string{
 		"claude-cli":     "claude",

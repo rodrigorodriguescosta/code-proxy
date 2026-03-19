@@ -1,6 +1,14 @@
 code-proxy
 *.db
 *.sqlite
-frontend/dist/
 node_modules/
 .claude/
+
+# Build artifacts
+backend/embed/dist/
+backend/tmp/
+dist/
+
+# Website
+website/dist/
+website/.astro/

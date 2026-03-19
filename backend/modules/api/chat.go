@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"code-proxy/account"
-	"code-proxy/database"
-	"code-proxy/provider"
+	"code-proxy/modules/account"
+	"code-proxy/modules/database"
+	"code-proxy/modules/provider"
 )
 
 const maxRetries = 3
