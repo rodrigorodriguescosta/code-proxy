@@ -60,9 +60,9 @@ const nav = [
 <template>
   <!-- Login gate -->
   <div v-if="needsLogin" class="flex items-center justify-center min-h-screen"
-       :class="theme === 'light' ? 'bg-gray-100' : 'bg-gray-950'">
+       :class="theme === 'light' ? 'bg-gray-100' : 'bg-zinc-950'">
     <div class="w-80 p-6 rounded-xl border"
-         :class="theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
+         :class="theme === 'light' ? 'bg-white border-gray-200' : 'bg-zinc-900 border-zinc-800/40'">
       <div class="flex items-center gap-2 mb-6">
         <img src="/favicon.svg" alt="CP" class="w-8 h-8 rounded-lg" />
         <h1 class="text-lg font-bold" :class="theme === 'light' ? 'text-gray-900' : 'text-white'">Code Proxy</h1>
@@ -72,7 +72,7 @@ const nav = [
                class="w-full px-4 py-2.5 rounded-lg border text-sm focus:outline-none focus:border-blue-500"
                :class="theme === 'light'
                  ? 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
-                 : 'bg-gray-950 border-gray-700 text-white placeholder-gray-600'" />
+                 : 'bg-zinc-950 border-zinc-800 text-white placeholder-zinc-600'" />
         <p v-if="loginError" class="text-red-400 text-xs">{{ loginError }}</p>
         <button type="submit"
                 class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-sm font-medium transition-colors">
@@ -84,17 +84,32 @@ const nav = [
 
   <!-- Main app -->
   <div v-else-if="authChecked" class="flex min-h-screen"
-       :class="theme === 'light' ? 'bg-gray-50' : 'bg-gray-950'">
+       :class="theme === 'light' ? 'bg-gray-50' : 'bg-zinc-950'">
     <!-- Sidebar -->
     <aside class="w-52 border-r flex flex-col shrink-0"
-           :class="theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
-      <div class="p-4 border-b" :class="theme === 'light' ? 'border-gray-200' : 'border-gray-800'">
-        <div class="flex items-center gap-2">
-          <img src="/favicon.svg" alt="CP" class="w-7 h-7 rounded-lg" />
-          <div>
-            <h1 class="text-sm font-bold leading-tight" :class="theme === 'light' ? 'text-gray-900' : 'text-white'">Code Proxy</h1>
-            <p class="text-[10px]" :class="theme === 'light' ? 'text-gray-400' : 'text-gray-500'">v1.0.0</p>
+           :class="theme === 'light' ? 'bg-white border-gray-200' : 'bg-zinc-900 border-zinc-800/40'">
+      <div class="p-4 border-b" :class="theme === 'light' ? 'border-gray-200' : 'border-zinc-800/50'">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <img src="/favicon.svg" alt="CP" class="w-7 h-7 rounded-lg" />
+            <div>
+              <h1 class="text-sm font-bold leading-tight" :class="theme === 'light' ? 'text-gray-900' : 'text-white'">Code Proxy</h1>
+              <p class="text-[10px]" :class="theme === 'light' ? 'text-gray-400' : 'text-gray-500'">v1.0.0</p>
+            </div>
           </div>
+          <button @click="toggleTheme"
+                  class="p-1.5 rounded-lg transition-colors"
+                  :class="theme === 'light'
+                    ? 'text-gray-400 hover:bg-gray-100 hover:text-gray-700'
+                    : 'text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200'"
+                  :title="theme === 'light' ? 'Dark Mode' : 'Light Mode'">
+            <svg v-if="theme === 'light'" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+            <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          </button>
         </div>
       </div>
       <nav class="flex-1 p-2 space-y-0.5">
@@ -103,25 +118,15 @@ const nav = [
           :to="item.path"
           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors"
           :class="route.path === item.path
-            ? 'bg-orange-500/10 text-orange-400 font-medium'
+            ? 'bg-blue-500/10 text-blue-400 font-medium'
             : theme === 'light'
               ? 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
-              : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'"
+              : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200'"
         >
           <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path :d="item.icon" /></svg>
           <span>{{ item.label }}</span>
         </router-link>
       </nav>
-      <!-- Theme toggle at bottom of sidebar -->
-      <div class="p-3 border-t" :class="theme === 'light' ? 'border-gray-200' : 'border-gray-800'">
-        <button @click="toggleTheme"
-                class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs transition-colors"
-                :class="theme === 'light'
-                  ? 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'">
-          {{ theme === 'light' ? 'Dark Mode' : 'Light Mode' }}
-        </button>
-      </div>
     </aside>
 
     <!-- Main content -->

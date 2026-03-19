@@ -14,16 +14,16 @@
   --cp-hover: #f1f5f9;
 }
 
-/* Dark theme (default) */
+/* Dark theme (default) — deep black */
 :root {
-  --cp-bg: #030712;
-  --cp-sidebar: #111827;
-  --cp-card: #111827;
-  --cp-card-alt: #030712;
-  --cp-border: #1f2937;
+  --cp-bg: #09090b;
+  --cp-sidebar: #0f0f12;
+  --cp-card: #0f0f12;
+  --cp-card-alt: #09090b;
+  --cp-border: #1e1e22;
   --cp-text: #ffffff;
   --cp-text-secondary: #9ca3af;
   --cp-text-muted: #6b7280;
-  --cp-input-bg: #030712;
-  --cp-hover: #1f2937;
+  --cp-input-bg: #09090b;
+  --cp-hover: #1e1e22;
 }
