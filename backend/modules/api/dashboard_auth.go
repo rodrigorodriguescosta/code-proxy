@@ -80,6 +80,10 @@ func registerAccountRoutes(mux *http.ServeMux, db *database.DB, acctMgr *account
 		switch {
 		case suffix == "refresh" && r.Method == "POST":
 			refreshAccount(w, db, id)
+		case suffix == "test" && r.Method == "POST":
+			testAccount(w, db, id)
+		case suffix == "quota" && r.Method == "GET":
+			getAccountQuota(w, db, id)
 		case suffix == "status" && r.Method == "GET":
 			accountStatus(w, db, id)
 		case suffix == "" && r.Method == "PUT":

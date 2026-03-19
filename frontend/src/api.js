@@ -71,6 +71,8 @@ export const api = {
   updateAccount: (id, data) => request(`/api/accounts/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteAccount: (id) => request(`/api/accounts/${id}`, { method: 'DELETE' }),
   refreshAccount: (id) => request(`/api/accounts/${id}/refresh`, { method: 'POST' }),
+  testAccount: (id) => request(`/api/accounts/${id}/test`, { method: 'POST' }),
+  getAccountQuota: (id) => request(`/api/accounts/${id}/quota`),
   getAccountUsage: (period) => request('/api/accounts/usage' + (period ? `?period=${period}` : '')),
 
   // OAuth
