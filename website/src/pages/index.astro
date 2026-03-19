@@ -34,8 +34,8 @@ import Layout from '../layouts/Layout.astro';
     <pre class="hero-code"><code><span class="dim"># Start the proxy</span>
 code-proxy
 
-<span class="dim"># Point Cursor at it</span>
-Base URL: http://localhost:3456/v1
+<span class="dim"># Point Cursor at your public URL</span>
+Base URL: https://your-server.com/v1
 
 <span class="dim"># Pick any model — prefix selects the provider</span>
 cc/claude-sonnet-4-6      <span class="dim"># Claude Code agent (subscription)</span>
@@ -105,7 +105,7 @@ openai/gpt-5.3            <span class="dim"># OpenAI API (pay-per-token)</span><
       <div class="feature">
         <div class="feature-icon">&#127760;</div>
         <h3>Cloudflare tunnel</h3>
-        <p>Built-in tunnel support. Share with your team without port forwarding or nginx. One click in the dashboard.</p>
+        <p>Built-in tunnel support with Named Tunnel for a <strong>fixed URL</strong>. Share with your team without port forwarding or nginx.</p>
       </div>
       <div class="feature">
         <div class="feature-icon">&#9889;</div>
@@ -172,21 +172,49 @@ export PROXY_REQUIRE_API_KEY=true
       </div>
     </div>
 
+    <div class="warning-box">
+      <div class="warning-icon">&#9888;</div>
+      <div>
+        <strong>Cursor does not support localhost.</strong>
+        You must expose Code Proxy via a <strong>public URL</strong> — deploy on a VPS with a public IP,
+        or use a Cloudflare Named Tunnel with a custom domain (e.g. <code>proxy.yourdomain.com</code>).
+        Quick Tunnels generate random URLs that <strong>change on every restart</strong> — use a Named Tunnel for a fixed URL.
+      </div>
+    </div>
+
     <div class="cursor-setup">
       <h3>Configure Cursor</h3>
       <div class="steps">
         <div class="step">
           <span class="step-num">1</span>
-          <span>Open dashboard at <code>http://localhost:3456</code> — connect your accounts</span>
+          <span>Start Code Proxy and open dashboard at <code>http://localhost:3456</code> — connect your accounts</span>
         </div>
         <div class="step">
           <span class="step-num">2</span>
-          <span>Cursor → Settings → Models → set Base URL to <code>http://localhost:3456/v1</code></span>
+          <span>Expose via VPS or enable a <strong>Named Tunnel</strong> (Dashboard → Tunnel) for a fixed public URL</span>
         </div>
         <div class="step">
           <span class="step-num">3</span>
+          <span>Cursor → Settings → Models → set Base URL to <code>https://your-public-url/v1</code></span>
+        </div>
+        <div class="step">
+          <span class="step-num">4</span>
           <span>Pick a model with the right prefix — done!</span>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Author -->
+  <section class="section author-section">
+    <div class="author-card">
+      <img src="https://github.com/rodrigorodriguescosta.png" alt="Rodrigo Rodrigues" class="author-avatar" />
+      <div>
+        <h3>Built by Rodrigo Rodrigues</h3>
+        <p>Software Engineer — full-stack Go + Vue.js. Creator of Code Proxy and <a href="https://sigeflex.com" target="_blank">Sigeflex ERP</a>.</p>
+        <a href="https://github.com/rodrigorodriguescosta" target="_blank" class="author-link">
+          @rodrigorodriguescosta
+        </a>
       </div>
     </div>
   </section>
@@ -495,6 +523,59 @@ export PROXY_REQUIRE_API_KEY=true
     font-size: 0.8rem;
     font-weight: 700;
     flex-shrink: 0;
+  }
+
+  .warning-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    max-width: 650px;
+    margin: 0 auto 1.5rem;
+    background: rgba(251, 146, 60, 0.08);
+    border: 1px solid rgba(251, 146, 60, 0.25);
+    border-radius: 10px;
+    padding: 1.25rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .warning-box strong { color: var(--orange); }
+  .warning-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.1rem; }
+
+  .author-section {
+    padding: 3rem 1.5rem;
+  }
+  .author-card {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    max-width: 500px;
+    margin: 0 auto;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+  }
+  .author-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 2px solid var(--border-accent);
+    flex-shrink: 0;
+  }
+  .author-card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+  .author-card p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+  }
+  .author-link {
+    font-size: 0.8rem;
+    font-weight: 500;
   }
 
   .footer {
