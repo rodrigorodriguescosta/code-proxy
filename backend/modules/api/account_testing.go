@@ -87,11 +87,16 @@ func testOAuthAccount(acct *database.Account, db *database.DB) TestResult {
 		})
 	}
 
-	// For Codex/OpenAI OAuth
-	if acct.ProviderType == "codex-cli" || acct.ProviderType == "openai-api" {
-		return testHTTPEndpoint("https://api.openai.com/v1/models", map[string]string{
+	// For Codex OAuth — token is only usable via CLI, can't test against OpenAI API directly
+	if acct.ProviderType == "codex-cli" {
+		return TestResult{Valid: true}
+	}
+
+	// For OpenAI API OAuth
+	if acct.ProviderType == "openai-api" {
+		return testChatEndpoint("https://api.openai.com/v1/chat/completions", map[string]string{
 			"Authorization": "Bearer " + acct.AccessToken,
-		})
+		}, "gpt-4o-mini")
 	}
 
 	// For Gemini OAuth
@@ -214,6 +219,55 @@ func testApiKeyAccount(acct *database.Account) TestResult {
 	}
 
 	return testHTTPEndpoint(cfg.url, cfg.headers)
+}
+
+// testChatEndpoint makes a minimal chat completion request to validate credentials
+func testChatEndpoint(url string, headers map[string]string, model string) TestResult {
+	client := &http.Client{Timeout: 15 * time.Second}
+
+	body := fmt.Sprintf(`{"model":"%s","messages":[{"role":"user","content":"hi"}],"max_tokens":1}`, model)
+	req, err := http.NewRequest("POST", url, strings.NewReader(body))
+	if err != nil {
+		return TestResult{Valid: false, Error: "Failed to create request: " + err.Error()}
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return TestResult{Valid: false, Error: "Connection failed: " + err.Error()}
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
+
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		return TestResult{Valid: true, StatusCode: resp.StatusCode}
+	}
+
+	errMsg := fmt.Sprintf("HTTP %d", resp.StatusCode)
+	if len(respBody) > 0 {
+		var errResp map[string]any
+		if json.Unmarshal(respBody, &errResp) == nil {
+			if e, ok := errResp["error"]; ok {
+				switch v := e.(type) {
+				case string:
+					errMsg = v
+				case map[string]any:
+					if msg, ok := v["message"].(string); ok {
+						errMsg = msg
+					}
+				}
+			}
+		}
+	}
+
+	log.Printf("[TEST] Chat test failed: url=%s status=%d error=%s", url, resp.StatusCode, errMsg)
+	return TestResult{Valid: false, Error: errMsg, StatusCode: resp.StatusCode}
 }
 
 // testHTTPEndpoint makes a GET request to validate credentials
