@@ -286,10 +286,11 @@ function isCooldown(a) {
 }
 
 function statusBadge(a) {
-  if (!a.is_active) return { text: 'Inactive', cls: 'bg-gray-500/10 text-gray-500' }
-  if (isExpired(a)) return { text: 'Expired', cls: 'bg-red-400/10 text-red-400' }
-  if (isCooldown(a)) return { text: 'Cooldown', cls: 'bg-yellow-400/10 text-yellow-400' }
-  return { text: 'Active', cls: 'bg-green-400/10 text-green-400' }
+  const light = props.theme === 'light'
+  if (!a.is_active) return { text: 'Inactive', cls: light ? 'bg-gray-100 text-gray-500' : 'bg-gray-500/10 text-gray-500' }
+  if (isExpired(a)) return { text: 'Expired', cls: light ? 'bg-red-100 text-red-700' : 'bg-red-400/10 text-red-400' }
+  if (isCooldown(a)) return { text: 'Cooldown', cls: light ? 'bg-yellow-100 text-yellow-700' : 'bg-yellow-400/10 text-yellow-400' }
+  return { text: 'Active', cls: light ? 'bg-green-100 text-green-700' : 'bg-green-400/10 text-green-400' }
 }
 
 async function toggleModels(c) {
@@ -367,10 +368,10 @@ onMounted(load)
           <div v-for="c in cat.catalog" :key="cat.key + '-' + catalogKey(c)"
                class="border rounded-xl p-4 transition-all group"
                :class="[
-                 props.theme === 'light' ? 'bg-white' : 'bg-gray-900',
+                 props.theme === 'light' ? 'bg-white' : 'bg-zinc-900',
                  expandedModels === catalogKey(c)
                    ? 'border-blue-500/40 ring-1 ring-blue-500/20'
-                   : props.theme === 'light' ? 'border-gray-200 hover:border-gray-300 hover:shadow-sm' : 'border-gray-800 hover:border-gray-700'
+                   : props.theme === 'light' ? 'border-gray-200 hover:border-gray-300 hover:shadow-sm' : 'border-zinc-800/50 hover:border-zinc-800'
                ]">
             <!-- Card header -->
             <div class="flex items-center gap-3">
@@ -392,7 +393,8 @@ onMounted(load)
                   <!-- CLI: show detected / not detected -->
                   <template v-if="cat.key === 'cli'">
                     <span v-if="getCliStatus(c).detected"
-                          class="bg-green-400/10 text-green-400 text-[10px] px-1.5 py-0.5 rounded-full font-medium">
+                          class="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                          :class="props.theme === 'light' ? 'bg-green-100 text-green-700' : 'bg-green-400/10 text-green-400'">
                       Detected{{ getCliStatus(c).version ? ' (' + getCliStatus(c).version + ')' : '' }}
                     </span>
                     <span v-else
@@ -401,12 +403,14 @@ onMounted(load)
                   <!-- OAuth / API Key: show connected accounts -->
                   <template v-else>
                     <template v-if="getProviderStats(c).connected > 0">
-                      <span class="bg-green-400/10 text-green-400 text-[10px] px-1.5 py-0.5 rounded-full font-medium">
+                      <span class="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                            :class="props.theme === 'light' ? 'bg-green-100 text-green-700' : 'bg-green-400/10 text-green-400'">
                         {{ getProviderStats(c).connected }} Connected
                       </span>
                     </template>
                     <template v-if="getProviderStats(c).errors > 0">
-                      <span class="bg-red-400/10 text-red-400 text-[10px] px-1.5 py-0.5 rounded-full font-medium">
+                      <span class="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                            :class="props.theme === 'light' ? 'bg-red-100 text-red-700' : 'bg-red-400/10 text-red-400'">
                         {{ getProviderStats(c).errors }} Error
                       </span>
                     </template>
@@ -428,16 +432,16 @@ onMounted(load)
 
             <!-- Connected accounts inline (not for CLI) -->
             <div v-if="cat.key !== 'cli' && accountsForCatalog(c).length > 0" class="mt-3 pt-3 border-t space-y-1.5"
-                 :class="props.theme === 'light' ? 'border-gray-100' : 'border-gray-800'">
+                 :class="props.theme === 'light' ? 'border-gray-100' : 'border-zinc-800/50'">
               <div v-for="a in accountsForCatalog(c)" :key="a.id"
                    class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg transition-colors"
-                   :class="props.theme === 'light' ? 'hover:bg-gray-50' : 'hover:bg-gray-800/50'">
+                   :class="props.theme === 'light' ? 'hover:bg-gray-50' : 'hover:bg-zinc-900/50'">
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-1.5">
                     <template v-if="editingAccountId === a.id">
                       <input v-model="editLabel" @keyup.enter="saveAccountLabel" @keyup.escape="cancelEditLabel" @blur="saveAccountLabel"
                              class="border rounded px-2 py-0.5 text-xs font-medium w-32 focus:outline-none"
-                             :class="props.theme === 'light' ? 'bg-white border-blue-400 text-gray-900' : 'bg-gray-950 border-blue-500 text-white'" />
+                             :class="props.theme === 'light' ? 'bg-white border-blue-400 text-gray-900' : 'bg-zinc-950 border-blue-500 text-white'" />
                     </template>
                     <template v-else>
                       <span class="text-xs font-medium truncate cursor-pointer"
@@ -451,16 +455,17 @@ onMounted(load)
                   <!-- Test result -->
                   <div v-if="testResults[a.id]" class="mt-0.5">
                     <span v-if="testResults[a.id].valid"
-                          class="text-[10px] text-green-400 font-medium">
+                          class="text-[10px] font-medium" :class="props.theme === 'light' ? 'text-green-700' : 'text-green-400'">
                       &#10003; Connected ({{ testResults[a.id].latency_ms }}ms)
                     </span>
                     <span v-else
-                          class="text-[10px] text-red-400 font-medium" :title="testResults[a.id].error">
+                          class="text-[10px] font-medium" :class="props.theme === 'light' ? 'text-red-600' : 'text-red-400'" :title="testResults[a.id].error">
                       &#10007; {{ testResults[a.id].error }}
                     </span>
                   </div>
                   <div v-else-if="a.last_error" class="mt-0.5">
-                    <span class="text-[10px] text-red-400/70 truncate block max-w-[200px]" :title="a.last_error">{{ a.last_error }}</span>
+                    <span class="text-[10px] truncate block max-w-[200px]"
+                          :class="props.theme === 'light' ? 'text-red-500' : 'text-red-400/70'" :title="a.last_error">{{ a.last_error }}</span>
                   </div>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
@@ -471,22 +476,22 @@ onMounted(load)
                             ? 'text-blue-400 animate-pulse'
                             : props.theme === 'light'
                               ? 'text-gray-400 hover:text-blue-500 hover:bg-gray-100'
-                              : 'text-gray-500 hover:text-blue-400 hover:bg-gray-800'"
+                              : 'text-gray-500 hover:text-blue-400 hover:bg-zinc-900'"
                           :title="testingAccount === a.id ? 'Testing...' : 'Test connection'">
                     {{ testingAccount === a.id ? '...' : 'Test' }}
                   </button>
                   <button v-if="a.auth_mode === 'oauth'" @click="refreshAccountToken(a)"
                           class="text-[10px] px-1 py-0.5 rounded transition-colors"
-                          :class="props.theme === 'light' ? 'text-gray-400 hover:text-blue-500 hover:bg-gray-100' : 'text-gray-500 hover:text-blue-400 hover:bg-gray-800'"
+                          :class="props.theme === 'light' ? 'text-gray-400 hover:text-blue-500 hover:bg-gray-100' : 'text-gray-500 hover:text-blue-400 hover:bg-zinc-900'"
                           title="Refresh token">&#8635;</button>
                   <button @click="toggleAccount(a)"
                           class="text-[10px] px-1.5 py-0.5 rounded transition-colors"
-                          :class="props.theme === 'light' ? 'text-gray-400 hover:text-gray-700 hover:bg-gray-100' : 'text-gray-500 hover:text-white hover:bg-gray-800'">
+                          :class="props.theme === 'light' ? 'text-gray-400 hover:text-gray-700 hover:bg-gray-100' : 'text-gray-500 hover:text-white hover:bg-zinc-900'">
                     {{ a.is_active ? 'Pause' : 'On' }}
                   </button>
                   <button @click="deleteAccount(a)"
                           class="text-[10px] px-1 py-0.5 rounded transition-colors"
-                          :class="props.theme === 'light' ? 'text-gray-400 hover:text-red-500 hover:bg-gray-100' : 'text-gray-500 hover:text-red-400 hover:bg-gray-800'">
+                          :class="props.theme === 'light' ? 'text-gray-400 hover:text-red-500 hover:bg-gray-100' : 'text-gray-500 hover:text-red-400 hover:bg-zinc-900'">
                     &#10005;
                   </button>
                 </div>
@@ -496,7 +501,7 @@ onMounted(load)
             <!-- Models list (expanded) -->
             <div v-if="expandedModels === catalogKey(c) && providerModels[catalogKey(c)]"
                  class="mt-3 pt-3 border-t"
-                 :class="props.theme === 'light' ? 'border-gray-100' : 'border-gray-800'">
+                 :class="props.theme === 'light' ? 'border-gray-100' : 'border-zinc-800/50'">
               <div v-if="providerModels[catalogKey(c)].length === 0"
                    class="text-xs" :class="props.theme === 'light' ? 'text-gray-400' : 'text-gray-600'">No models registered</div>
               <div v-else class="flex flex-wrap gap-1.5">
@@ -506,7 +511,7 @@ onMounted(load)
                         ? 'bg-green-500/20 text-green-400'
                         : props.theme === 'light'
                           ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                          : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
+                          : 'bg-zinc-900 text-gray-300 hover:bg-zinc-800'"
                       :title="m.id"
                       @click.stop="copyToClipboard(m.id, m.id)">
                   {{ copiedModelId === m.id ? 'Copied!' : m.id }}
@@ -520,9 +525,9 @@ onMounted(load)
 
       <!-- Add Account Dialog -->
       <div v-if="showAddForm"
-           class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+           class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/50 p-4">
         <div class="w-full max-w-xl border rounded-xl p-5"
-             :class="props.theme === 'light' ? 'bg-white border-blue-200' : 'bg-gray-900 border-blue-500/30'">
+             :class="props.theme === 'light' ? 'bg-white border-blue-200' : 'bg-zinc-900 border-blue-500/30'">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-sm font-semibold uppercase tracking-wider"
                 :class="props.theme === 'light' ? 'text-gray-900' : 'text-white'">
@@ -537,12 +542,12 @@ onMounted(load)
           <!-- Auth mode toggle (only for providers that support both) -->
           <div v-if="supportsOAuth(addProviderType) && getCatalogInfo(addProviderType).auth?.includes('apikey')" class="flex gap-2 mb-4">
             <button @click="addAuthMode = 'apikey'"
-                    :class="addAuthMode === 'apikey' ? 'bg-blue-600 text-white' : props.theme === 'light' ? 'bg-gray-100 text-gray-500 hover:text-gray-700' : 'bg-gray-800 text-gray-400 hover:text-white'"
+                    :class="addAuthMode === 'apikey' ? 'bg-blue-600 text-white' : props.theme === 'light' ? 'bg-gray-100 text-gray-500 hover:text-gray-700' : 'bg-zinc-900 text-gray-400 hover:text-white'"
                     class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors">
               API Key
             </button>
             <button @click="addAuthMode = 'oauth'"
-                    :class="addAuthMode === 'oauth' ? 'bg-blue-600 text-white' : props.theme === 'light' ? 'bg-gray-100 text-gray-500 hover:text-gray-700' : 'bg-gray-800 text-gray-400 hover:text-white'"
+                    :class="addAuthMode === 'oauth' ? 'bg-blue-600 text-white' : props.theme === 'light' ? 'bg-gray-100 text-gray-500 hover:text-gray-700' : 'bg-zinc-900 text-gray-400 hover:text-white'"
                     class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors">
               OAuth
             </button>
@@ -554,19 +559,19 @@ onMounted(load)
               <label class="block text-xs mb-1" :class="props.theme === 'light' ? 'text-gray-500' : 'text-gray-400'">Label</label>
               <input v-model="addForm.label" placeholder="e.g. Production, Test"
                      class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                     :class="props.theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900' : 'bg-gray-950 border-gray-700 text-white'" />
+                     :class="props.theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900' : 'bg-zinc-950 border-zinc-800 text-white'" />
             </div>
             <div>
               <label class="block text-xs mb-1" :class="props.theme === 'light' ? 'text-gray-500' : 'text-gray-400'">API Key</label>
               <input v-model="addForm.api_key" type="password" placeholder="sk-..."
                      class="w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-500"
-                     :class="props.theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900' : 'bg-gray-950 border-gray-700 text-white'" />
+                     :class="props.theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900' : 'bg-zinc-950 border-zinc-800 text-white'" />
             </div>
             <div v-if="addProviderType === 'generic-openai'">
               <label class="block text-xs mb-1" :class="props.theme === 'light' ? 'text-gray-500' : 'text-gray-400'">Base URL</label>
               <input v-model="addForm.base_url" placeholder="https://api.example.com"
                      class="w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-500"
-                     :class="props.theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900' : 'bg-gray-950 border-gray-700 text-white'" />
+                     :class="props.theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900' : 'bg-zinc-950 border-zinc-800 text-white'" />
             </div>
             <button @click="createApiKeyAccount"
                     class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors">
@@ -581,7 +586,7 @@ onMounted(load)
                 <label class="block text-xs mb-1" :class="props.theme === 'light' ? 'text-gray-500' : 'text-gray-400'">Label (optional)</label>
                 <input v-model="addForm.label" placeholder="e.g. Personal, Production"
                        class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                       :class="props.theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900' : 'bg-gray-950 border-gray-700 text-white'" />
+                       :class="props.theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900' : 'bg-zinc-950 border-zinc-800 text-white'" />
               </div>
               <p class="text-sm" :class="props.theme === 'light' ? 'text-gray-500' : 'text-gray-400'">
                 Click to authenticate via OAuth. A window will open for login.
@@ -599,7 +604,7 @@ onMounted(load)
 
             <div v-else-if="oauthState.authUrl && !oauthState.polling">
               <div class="border rounded-lg p-4 mb-4"
-                   :class="props.theme === 'light' ? 'bg-gray-50 border-gray-200' : 'bg-gray-950 border-gray-700'">
+                   :class="props.theme === 'light' ? 'bg-gray-50 border-gray-200' : 'bg-zinc-950 border-zinc-800'">
                 <p class="text-sm mb-2" :class="props.theme === 'light' ? 'text-gray-600' : 'text-gray-300'">Click the link to authenticate:</p>
                 <a :href="oauthState.authUrl" target="_blank" rel="noopener"
                    class="text-blue-400 hover:text-blue-300 text-sm underline break-all">Open login page</a>
@@ -617,9 +622,9 @@ onMounted(load)
                   Wait for Automatic Callback
                 </button>
                 <div class="flex items-center gap-3">
-                  <div class="flex-1 border-t" :class="props.theme === 'light' ? 'border-gray-200' : 'border-gray-800'"></div>
+                  <div class="flex-1 border-t" :class="props.theme === 'light' ? 'border-gray-200' : 'border-zinc-800/50'"></div>
                   <span class="text-xs" :class="props.theme === 'light' ? 'text-gray-400' : 'text-gray-600'">or</span>
-                  <div class="flex-1 border-t" :class="props.theme === 'light' ? 'border-gray-200' : 'border-gray-800'"></div>
+                  <div class="flex-1 border-t" :class="props.theme === 'light' ? 'border-gray-200' : 'border-zinc-800/50'"></div>
                 </div>
                 <div>
                   <label class="block text-xs mb-1" :class="props.theme === 'light' ? 'text-gray-500' : 'text-gray-400'">
@@ -628,10 +633,10 @@ onMounted(load)
                   <div class="flex gap-2">
                     <input v-model="oauthCallbackUrl" placeholder="http://localhost:.../callback?code=..."
                            class="flex-1 border rounded-lg px-3 py-2 text-xs font-mono focus:outline-none focus:border-blue-500"
-                           :class="props.theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900' : 'bg-gray-950 border-gray-700 text-white'" />
+                           :class="props.theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-900' : 'bg-zinc-950 border-zinc-800 text-white'" />
                     <button @click="submitCallbackUrl" :disabled="!oauthCallbackUrl"
                             class="px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-                            :class="props.theme === 'light' ? 'bg-gray-200 hover:bg-gray-300 text-gray-700' : 'bg-gray-700 hover:bg-gray-600 text-white'">
+                            :class="props.theme === 'light' ? 'bg-gray-200 hover:bg-gray-300 text-gray-700' : 'bg-zinc-800 hover:bg-zinc-700 text-white'">
                       Submit
                     </button>
                   </div>
