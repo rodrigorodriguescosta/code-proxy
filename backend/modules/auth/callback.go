@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -37,6 +38,7 @@ func (s *CallbackServer) Start() error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/callback", s.handleCallback)
 	mux.HandleFunc("/auth/callback", s.handleCallback)
+	mux.HandleFunc("/oauth/code/success", s.handleCallback)
 
 	s.server = &http.Server{
 		Addr:    fmt.Sprintf(":%d", s.port),
@@ -68,6 +70,15 @@ func (s *CallbackServer) handleCallback(w http.ResponseWriter, r *http.Request) 
 		s.resultCh <- CallbackResult{Error: errParam}
 		fmt.Fprintf(w, "<html><body><h2>Authentication Error</h2><p>%s</p><p>You can close this window.</p></body></html>", errParam)
 		return
+	}
+
+	// Some providers (Claude) may include state in a fragment after the code (code#state)
+	if code != "" && strings.Contains(code, "#") {
+		parts := strings.SplitN(code, "#", 2)
+		code = parts[0]
+		if state == "" && len(parts) > 1 {
+			state = parts[1]
+		}
 	}
 
 	if code == "" {

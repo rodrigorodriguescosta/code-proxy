@@ -20,7 +20,7 @@ type OAuthConfig struct {
 func (c OAuthConfig) RedirectURI() string {
 	path := c.CallbackPath
 	if path == "" {
-		path = "/auth/callback"
+		path = "/callback"
 	}
 	return fmt.Sprintf("http://localhost:%d%s", c.CallbackPort, path)
 }
@@ -30,12 +30,16 @@ var Configs = map[string]OAuthConfig{
 	"claude": {
 		Provider:     "claude",
 		ClientID:     "9d1c250a-e61b-44d9-88ed-5944d1962f5e",
-		AuthURL:      "https://platform.claude.com/oauth/authorize",
-		TokenURL:     "https://platform.claude.com/oauth/token",
+		AuthURL:      "https://claude.ai/oauth/authorize",
+		TokenURL:     "https://api.anthropic.com/v1/oauth/token",
 		Scopes:       []string{"org:create_api_key", "user:profile", "user:inference"},
 		CallbackPort: 54545,
+		CallbackPath: "/callback",
 		ContentType:  "application/json",
 		UsePKCE:      true,
+		ExtraParams: map[string]string{
+			"code": "true",
+		},
 	},
 	"codex": {
 		Provider:     "codex",
@@ -44,6 +48,7 @@ var Configs = map[string]OAuthConfig{
 		TokenURL:     "https://auth.openai.com/oauth/token",
 		Scopes:       []string{"openid", "email", "profile", "offline_access"},
 		CallbackPort: 1455,
+		CallbackPath: "/auth/callback",
 		ContentType:  "application/x-www-form-urlencoded",
 		UsePKCE:      true,
 		ExtraParams: map[string]string{
@@ -60,6 +65,7 @@ var Configs = map[string]OAuthConfig{
 		TokenURL:     "https://oauth2.googleapis.com/token",
 		Scopes:       []string{"https://www.googleapis.com/auth/cloud-platform", "https://www.googleapis.com/auth/userinfo.email"},
 		CallbackPort: 8085,
+		CallbackPath: "/callback",
 		ContentType:  "application/x-www-form-urlencoded",
 		UsePKCE:      true,
 		ExtraParams: map[string]string{
@@ -69,11 +75,12 @@ var Configs = map[string]OAuthConfig{
 	},
 	"antigravity": {
 		Provider:     "antigravity",
-		ClientID:     "681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com",
+		ClientID:     "1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com",
 		AuthURL:      "https://accounts.google.com/o/oauth2/v2/auth",
 		TokenURL:     "https://oauth2.googleapis.com/token",
 		Scopes:       []string{"https://www.googleapis.com/auth/cloud-platform", "https://www.googleapis.com/auth/userinfo.email"},
 		CallbackPort: 8086,
+		CallbackPath: "/callback",
 		ContentType:  "application/x-www-form-urlencoded",
 		UsePKCE:      true,
 		ExtraParams: map[string]string{
