@@ -4,19 +4,24 @@ A unified proxy that lets you use **Claude Code**, **OpenAI Codex**, **Gemini** 
 
 ## Why Code Proxy?
 
-AI coding tools offer two very different modes:
+AI coding tools like **Cursor**, **Windsurf**, **Cline**, **Continue**, and others offer great agent capabilities — but using their built-in model credits can be expensive. Meanwhile, you're already paying for a Claude Max or Codex Pro subscription that includes powerful models.
 
-| Mode | What happens | Agent | Best for |
-|------|-------------|-------|----------|
-| **CLI (subscription)** | Routes through `claude` / `codex` binary | Full code agent (reads files, runs commands, edits code) | Complex tasks — the AI *does* the work |
-| **API (pay-per-token)** | Direct HTTP to provider API | Chat-only — answers questions | Quick questions, code review |
+**Code Proxy bridges this gap.** It lets any OpenAI-compatible client use your existing subscriptions — so you get the best of both worlds: **your favorite IDE's agent + your subscription's models**.
 
-**Code Proxy exposes both modes as a single OpenAI-compatible API**, so Cursor (or any client) can use either one — just by picking a model name.
+### Three modes, one endpoint
+
+| Mode | What happens | Who is the agent? | Best for |
+|------|-------------|-------------------|----------|
+| **CLI Agent** | Spawns `claude` / `codex` binary | The CLI tool (reads files, runs commands) | Complex tasks — the AI *does* the work |
+| **OAuth Provider** | Direct API call using your subscription token | **Your IDE** (reads files, runs commands, edits code) | Best of both worlds — your IDE's agent + subscription models |
+| **API Key** | Direct API call using API key | Your IDE or chat-only | Quick questions, pay-per-token usage |
+
+The **OAuth Provider** mode is the key differentiator. It works like [OpenCode](https://github.com/opencode-ai/opencode) or similar tools — but instead of a separate app, you use **your preferred IDE as the coding agent** (Cursor, Windsurf, Cline, Continue, or any OpenAI-compatible client), powered by models from your Claude Code, Codex, or Gemini subscription. No CLI binary needed, no extra token costs.
 
 ### Key benefits
 
-- **Centralize subscriptions** — connect multiple Claude/Codex/Gemini accounts and share them across your team
-- **Use Cursor's chat with your subscription** — Claude Code and Codex subscriptions include the code agent; Code Proxy lets Cursor leverage that agent instead of consuming API tokens
+- **Use your IDE with your subscription** — connect your Claude Max / Codex Pro / Gemini account via OAuth and let your IDE's agent (Cursor, Windsurf, Cline, etc.) use those models at no extra cost
+- **Centralize subscriptions** — connect multiple accounts and share them across your team
 - **Track usage** — see token counts, costs, and request history per model, per account, per API key
 - **Control access** — create API keys, set quotas, revoke access instantly
 - **One endpoint, all providers** — Claude, GPT, Gemini, DeepSeek, Groq, Together, Ollama — all through `http://localhost:3456/v1`
@@ -34,29 +39,61 @@ Cursor / VS Code / any client
    │  /v1/models             │
    └────────┬────────────────┘
             │ routes by model prefix
-            ├── cc/*        → Claude CLI agent (subscription)
-            ├── codex/*     → Codex CLI agent (subscription)
-            ├── gc/*        → Gemini CLI
-            ├── anthropic/* → Anthropic Messages API (pay-per-token)
-            ├── openai/*    → OpenAI API (pay-per-token)
-            ├── gemini/*    → Gemini API (pay-per-token)
+            │
+            │  CLI Agent (spawns local binary)
+            ├── cli-cc/*    → Claude Code CLI (subscription)
+            ├── cli-codex/* → Codex CLI (subscription)
+            ├── cli-gc/*    → Gemini CLI (subscription)
+            │
+            │  OAuth Provider (subscription → direct API)
+            ├── cc/*        → Claude via OAuth (subscription)
+            ├── openai/*    → OpenAI via OAuth (subscription)
+            ├── gemini/*    → Gemini via OAuth (subscription)
+            │
+            │  API Key Provider (pay-per-token)
+            ├── anthropic/* → Anthropic API
+            ├── openai/*    → OpenAI API
+            ├── gemini/*    → Gemini API
             ├── deepseek/*  → DeepSeek API
             ├── groq/*      → Groq API
             └── generic/*   → Any OpenAI-compatible endpoint
 ```
 
-### CLI vs API — what's the difference?
+> **Note:** When the same prefix (e.g. `openai/`) has both OAuth and API key accounts, Code Proxy picks from the available accounts using round-robin.
 
-When you select a **CLI model** (e.g. `cc/claude-sonnet-4-6`), Code Proxy spawns the actual `claude` or `codex` binary on your machine. This means:
+### Understanding the three modes
 
-- The request uses your **subscription** (Claude Max, Codex Pro, etc.) — not API tokens
-- The AI runs as a **full code agent** — it can read your files, run commands, search your codebase
-- Cursor acts as the interface, but the agent doing the work is Claude Code or Codex
+#### 1. CLI Agent — the AI does the work
 
-When you select an **API model** (e.g. `anthropic/claude-sonnet-4-6`), Code Proxy sends the request directly to the provider's HTTP API:
+Model prefix: `cli-cc/`, `cli-codex/`, `cli-gc/`
 
-- Uses **API keys** or **OAuth tokens** — pay-per-token pricing
-- Chat-only — no file access, no command execution
+Code Proxy spawns the actual `claude` or `codex` binary on your machine:
+
+- Uses your **subscription** (Claude Max, Codex Pro, etc.) — not API tokens
+- The AI runs as a **full code agent** — it reads your files, runs commands, searches your codebase
+- Your IDE acts as the display, but the agent doing the work is Claude Code or Codex
+
+#### 2. OAuth Provider — Cursor as the agent, your subscription's models
+
+Model prefix: `cc/`, `openai/`, `gemini/` (with OAuth account connected)
+
+Code Proxy calls the provider API using your **subscription's OAuth token**:
+
+- Uses your **subscription** — same models, same quota, no extra cost
+- **Your IDE is the coding agent** — it reads files, runs commands, edits code using its own agent loop
+- No CLI binary needed — works on any machine with just Code Proxy
+- Works with any OpenAI-compatible client: Cursor, Windsurf, Cline, Continue, etc.
+
+This is similar to how Claude Code or Codex work natively, but **your IDE replaces the CLI** as the agent. You get your IDE's UI, inline diffs, multi-file editing, and native integration — all powered by your existing subscription.
+
+#### 3. API Key — pay-per-token
+
+Model prefix: `anthropic/`, `openai/`, `gemini/`, `deepseek/`, etc. (with API key configured)
+
+Code Proxy sends requests directly to the provider's HTTP API:
+
+- Uses **API keys** — standard pay-per-token pricing
+- Works for all 15+ supported providers
 - Lower latency for quick questions
 
 ## Installation
@@ -170,24 +207,36 @@ This way Cursor always points to `https://proxy.yourdomain.com/v1` and it never 
 5. Set the Base URL to `https://your-public-url/v1`
 6. Pick a model — use the prefix to choose the provider:
 
-| Model ID | Provider | Mode |
-|----------|----------|------|
-| `cc/claude-sonnet-4-6` | Claude Code CLI | Subscription agent |
-| `cc/claude-opus-4-6:max` | Claude Code CLI | Subscription (max effort) |
-| `codex/5.3` | Codex CLI | Subscription agent |
-| `anthropic/claude-sonnet-4-6` | Anthropic API | Pay-per-token |
-| `openai/gpt-5.3` | OpenAI API | Pay-per-token |
-| `gemini/gemini-2.5-pro` | Gemini API | Pay-per-token |
-| `deepseek/deepseek-chat` | DeepSeek API | Pay-per-token |
+| Model ID | Mode | What happens |
+|----------|------|--------------|
+| `cli-cc/claude-sonnet-4-6` | CLI Agent | Spawns `claude` binary (subscription) |
+| `cli-cc/claude-opus-4-6:max` | CLI Agent | Spawns `claude` binary (max effort) |
+| `cli-codex/o3-pro` | CLI Agent | Spawns `codex` binary (subscription) |
+| `cc/claude-sonnet-4-6` | OAuth | IDE as agent, Claude subscription |
+| `cc/claude-opus-4-6` | OAuth | IDE as agent, Claude subscription |
+| `openai/gpt-4o` | OAuth / API Key | IDE as agent, OpenAI subscription or API key |
+| `gemini/gemini-2.5-pro` | OAuth / API Key | IDE as agent, Gemini subscription or API key |
+| `anthropic/claude-sonnet-4-6` | API Key | Pay-per-token |
+| `deepseek/deepseek-chat` | API Key | Pay-per-token |
 
 ### Effort levels
 
 Append `:low`, `:medium`, `:high`, or `:max` to CLI models to control token usage:
 
 ```
-cc/claude-sonnet-4-6:low    → fast, minimal tokens
-cc/claude-sonnet-4-6:max    → thorough, more tokens
+cli-cc/claude-sonnet-4-6:low    → fast, minimal tokens
+cli-cc/claude-sonnet-4-6:max    → thorough, more tokens
 ```
+
+### CLI Agent limitations
+
+The CLI Agent mode communicates with the `claude`/`codex` binary via a text-based protocol. Some IDE features are **not supported** in this mode:
+
+- **Inline diffs** — the CLI protocol doesn't support structured diff output, so the IDE can't show inline change previews
+- **Multi-file edit previews** — edits happen inside the CLI agent, not through the IDE's UI
+- **Tool approval** — tool calls are managed by the CLI, not by the IDE
+
+For the best experience, prefer the **OAuth Provider** mode — your IDE handles everything natively with full integration (diffs, multi-file edits, tool approval, etc.).
 
 ## Dashboard
 
@@ -231,13 +280,23 @@ This lets you pool subscriptions across a team without sharing credentials.
 Code Proxy implements the OpenAI Chat Completions API:
 
 ```bash
-# Chat completion (streaming)
+# OAuth provider — Cursor as agent, using your subscription
 curl http://localhost:3456/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer your-api-key" \
   -d '{
     "model": "cc/claude-sonnet-4-6",
     "messages": [{"role": "user", "content": "Hello"}],
+    "stream": true
+  }'
+
+# CLI agent — spawns the claude binary
+curl http://localhost:3456/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-api-key" \
+  -d '{
+    "model": "cli-cc/claude-sonnet-4-6",
+    "messages": [{"role": "user", "content": "Refactor the auth module"}],
     "stream": true
   }'
 
@@ -254,13 +313,15 @@ curl http://localhost:3456/v1/models
 
 ## Prerequisites
 
-For **CLI providers** (subscription mode), you need the respective CLI tool installed:
+For **CLI Agent** mode (`cli-cc/`, `cli-codex/`, `cli-gc/`), you need the CLI tool installed locally:
 
 - **Claude Code**: `npm install -g @anthropic-ai/claude-code` and authenticate with `claude`
 - **Codex**: `npm install -g @openai/codex` and authenticate with `codex`
 - **Gemini CLI**: install and authenticate per Google's instructions
 
-For **API providers**, you just need an API key or OAuth credentials — no CLI required.
+For **OAuth Provider** mode (`cc/`, `openai/`, `gemini/`), just connect your account via the dashboard — no CLI installation needed. Code Proxy handles OAuth token management and refresh automatically.
+
+For **API Key** mode, you just need an API key from the provider.
 
 ## Author
 

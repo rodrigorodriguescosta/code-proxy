@@ -26,7 +26,7 @@ func formatACPToolCall(tc *acp.SessionUpdateToolCall) string {
 
 			lang := detectLang(c.Diff.Path)
 			var b strings.Builder
-			b.WriteString(fmt.Sprintf("#### Edit `%s` %s\n", path, stats))
+			b.WriteString(fmt.Sprintf("**Edit** `%s` %s\n", path, stats))
 			b.WriteString(fmt.Sprintf("```diff\n%s%s```\n", oldDiff, newDiff))
 			b.WriteString(fmt.Sprintf("```%s:%s\n%s\n```", lang, c.Diff.Path, c.Diff.NewText))
 			parts = append(parts, b.String())
@@ -34,7 +34,7 @@ func formatACPToolCall(tc *acp.SessionUpdateToolCall) string {
 		case c.Terminal != nil:
 			// Terminal inline: the title usually contains the command
 			if tc.Title != "" {
-				parts = append(parts, fmt.Sprintf("#### %s\n```bash\n%s\n```", tc.Title, tc.Title))
+				parts = append(parts, fmt.Sprintf("**%s**\n> `%s`", tc.Title, tc.Title))
 			} else {
 				parts = append(parts, fmt.Sprintf("*Terminal: `%s`*", c.Terminal.TerminalId))
 			}
@@ -69,7 +69,7 @@ func formatACPToolCall(tc *acp.SessionUpdateToolCall) string {
 	if tc.Title != "" {
 		switch tc.Kind {
 		case acp.ToolKindExecute:
-			return fmt.Sprintf("#### %s\n```bash\n%s\n```", tc.Title, tc.Title)
+			return fmt.Sprintf("**%s**\n> `%s`", tc.Title, tc.Title)
 		case acp.ToolKindEdit:
 			return fmt.Sprintf("*Edit: %s*", tc.Title)
 		case acp.ToolKindRead:

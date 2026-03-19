@@ -321,7 +321,7 @@ func formatToolUse(name string, input json.RawMessage) string {
 			// Code block with path that Cursor can recognize for "Apply"
 			lang := detectLang(inp.FilePath)
 			var b strings.Builder
-			b.WriteString(fmt.Sprintf("#### Edit `%s` %s\n", fname, stats))
+			b.WriteString(fmt.Sprintf("**Edit** `%s` %s\n", fname, stats))
 			b.WriteString(fmt.Sprintf("```diff\n%s%s```\n", old, new))
 			// Block with filepath label for Cursor to detect
 			b.WriteString(fmt.Sprintf("```%s:%s\n%s\n```", lang, inp.FilePath, inp.NewString))
@@ -336,12 +336,9 @@ func formatToolUse(name string, input json.RawMessage) string {
 		if json.Unmarshal(input, &inp) == nil && inp.FilePath != "" {
 			fname := shortPath(inp.FilePath)
 			lines := strings.Count(inp.Content, "\n") + 1
-			preview := inp.Content
-			if len(preview) > 600 {
-				preview = preview[:600] + "\n// ... (truncated)"
-			}
 			lang := detectLang(inp.FilePath)
-			return fmt.Sprintf("#### Write `%s` *%d lines*\n```%s\n%s\n```", fname, lines, lang, preview)
+			// Keep code block with filepath label for Cursor file detection
+			return fmt.Sprintf("**Write** `%s` *(%d lines)*\n```%s:%s\n%s\n```", fname, lines, lang, inp.FilePath, inp.Content)
 		}
 
 	case "Read":
@@ -368,11 +365,10 @@ func formatToolUse(name string, input json.RawMessage) string {
 			if len(cmd) > 300 {
 				cmd = cmd[:300] + "..."
 			}
-			header := "Bash"
 			if inp.Description != "" {
-				header = inp.Description
+				return fmt.Sprintf("**%s**\n> `%s`", inp.Description, cmd)
 			}
-			return fmt.Sprintf("#### %s\n```bash\n%s\n```", header, cmd)
+			return fmt.Sprintf("> `%s`", cmd)
 		}
 
 	case "Grep":
@@ -406,7 +402,7 @@ func formatToolUse(name string, input json.RawMessage) string {
 			return fmt.Sprintf("*Glob `%s` in `%s`*", inp.Pattern, path)
 		}
 
-	case "Task":
+	case "Task", "Agent":
 		var inp struct {
 			Description  string `json:"description"`
 			Prompt       string `json:"prompt"`
@@ -423,7 +419,7 @@ func formatToolUse(name string, input json.RawMessage) string {
 			if agent == "" {
 				agent = "agent"
 			}
-			return fmt.Sprintf("#### Task (%s)\n> %s", agent, desc)
+			return fmt.Sprintf("**Task** (%s): %s", agent, desc)
 		}
 
 	case "TodoWrite":
