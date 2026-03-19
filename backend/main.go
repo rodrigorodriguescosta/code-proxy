@@ -103,11 +103,11 @@ func main() {
 		}
 	}
 
-	// // Auto-start tunnel if it was enabled before shutdown
-	// if db != nil {
-	// 	settings := db.GetSettings()
-	// 	tunnelMgr.AutoStart(settings.TunnelEnabled, settings.TunnelToken)
-	// }
+	// Auto-start tunnel if it was enabled before shutdown
+	if db != nil {
+		settings := db.GetSettings()
+		tunnelMgr.AutoStart(settings.TunnelEnabled, settings.TunnelToken)
+	}
 
 	log.Printf("[MAIN] Code Proxy listening on :%s", cfg.Port)
 	log.Printf("[MAIN] Default model: %s, Providers: %v", cfg.DefaultModel, registry.ListProviders())
