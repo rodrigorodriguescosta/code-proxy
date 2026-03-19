@@ -554,6 +554,40 @@ func (db *DB) GetStatsForPeriod(period string) map[string]any {
 		stats["per_key"] = keyStats
 	}
 
+	// Per API key per model breakdown (period-filtered)
+	keyModelQuery := fmt.Sprintf(`
+		SELECT l.api_key_id, COALESCE(k.name, 'unknown'), l.model,
+			   COUNT(*), COALESCE(SUM(l.input_tokens),0), COALESCE(SUM(l.output_tokens),0),
+			   COALESCE(SUM(l.estimated_cost),0)
+		FROM request_logs l
+		LEFT JOIN api_keys k ON l.api_key_id = k.id
+		%s
+		GROUP BY l.api_key_id, l.model
+		ORDER BY l.api_key_id, COUNT(*) DESC
+	`, whereClause)
+	kmRows, _ := db.conn.Query(keyModelQuery)
+	if kmRows != nil {
+		defer kmRows.Close()
+		keyModels := []map[string]any{}
+		for kmRows.Next() {
+			var keyID, keyName, model string
+			var cnt int
+			var inTok, outTok int64
+			var cost float64
+			kmRows.Scan(&keyID, &keyName, &model, &cnt, &inTok, &outTok, &cost)
+			keyModels = append(keyModels, map[string]any{
+				"key_id":        keyID,
+				"key_name":      keyName,
+				"model":         model,
+				"requests":      cnt,
+				"input_tokens":  inTok,
+				"output_tokens": outTok,
+				"cost":          cost,
+			})
+		}
+		stats["per_key_models"] = keyModels
+	}
+
 	// Recent requests (always last 20)
 	recentRows, _ := db.conn.Query(`
 		SELECT l.model, l.input_tokens, l.output_tokens, COALESCE(l.estimated_cost, 0),

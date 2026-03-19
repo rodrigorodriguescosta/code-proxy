@@ -1,11 +1,13 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { api } from '../api.js'
+import BarChart from '../components/BarChart.vue'
 
 const props = defineProps({ theme: String })
 
 const accounts = ref([])
 const loading = ref(true)
+const chartMetric = ref('requests')
 
 const period = ref('30d')
 const periods = [
@@ -15,6 +17,30 @@ const periods = [
   { value: '60d', label: '60 days' },
   { value: '', label: 'All time' },
 ]
+
+const metrics = [
+  { value: 'requests', label: 'Requests' },
+  { value: 'tokens', label: 'Tokens' },
+  { value: 'cost', label: 'Cost' },
+]
+
+const chartItems = computed(() => {
+  return accounts.value.map(a => {
+    const label = a.label || a.provider_type
+    if (chartMetric.value === 'tokens') {
+      return { label, value: (a.input_tokens || 0) + (a.output_tokens || 0), sub: `(${fmtNum(a.input_tokens)}in / ${fmtNum(a.output_tokens)}out)` }
+    }
+    if (chartMetric.value === 'cost') {
+      return { label, value: a.estimated_cost || 0 }
+    }
+    return { label, value: a.requests || 0, sub: fmtCost(a.estimated_cost) }
+  })
+})
+
+function chartValueFmt(v) {
+  if (chartMetric.value === 'cost') return fmtCost(v)
+  return fmtNum(v)
+}
 
 function fmtNum(n) {
   if (!n && n !== 0) return '0'
@@ -89,11 +115,33 @@ onMounted(load)
 
     <div v-if="loading" class="text-gray-500">Loading...</div>
 
-    <div v-else>
+    <div v-else class="space-y-6">
+      <!-- Chart -->
+      <div v-if="accounts.length" class="border rounded-xl p-5"
+           :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-semibold uppercase tracking-wider"
+              :class="props.theme === 'light' ? 'text-gray-700' : 'text-white'">Usage by Account</h3>
+          <div class="flex gap-1 p-1 rounded-lg" :class="props.theme === 'light' ? 'bg-gray-100' : 'bg-gray-800'">
+            <button v-for="m in metrics" :key="m.value" @click="chartMetric = m.value"
+                    class="px-2.5 py-1 rounded-md text-xs font-medium transition-colors"
+                    :class="chartMetric === m.value
+                      ? (props.theme === 'light' ? 'bg-white text-gray-900 shadow-sm' : 'bg-gray-700 text-white')
+                      : (props.theme === 'light' ? 'text-gray-500 hover:text-gray-900' : 'text-gray-400 hover:text-white')">
+              {{ m.label }}
+            </button>
+          </div>
+        </div>
+        <BarChart :items="chartItems" :theme="props.theme" :value-formatter="chartValueFmt" />
+      </div>
+
+      <!-- Table -->
       <div
         class="border rounded-xl p-5"
         :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'"
       >
+        <h3 class="text-sm font-semibold uppercase tracking-wider mb-3"
+            :class="props.theme === 'light' ? 'text-gray-700' : 'text-white'">Details</h3>
         <div class="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-2 text-xs pb-2 border-b mb-2"
              :class="props.theme === 'light' ? 'text-gray-400 border-gray-200' : 'text-gray-500 border-gray-800'">
           <span>Account</span>
@@ -146,4 +194,3 @@ onMounted(load)
     </div>
   </div>
 </template>
-

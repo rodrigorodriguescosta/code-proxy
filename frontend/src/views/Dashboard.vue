@@ -1,11 +1,14 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { api } from '../api.js'
+import BarChart from '../components/BarChart.vue'
 
 const props = defineProps({ theme: String })
 const stats = ref(null)
 const loading = ref(true)
 const period = ref('30d')
+const chartMetric = ref('requests')
+const expandedKey = ref(null)
 
 const periods = [
   { value: '24h', label: '24h' },
@@ -14,6 +17,76 @@ const periods = [
   { value: '60d', label: '60 days' },
   { value: '', label: 'All time' },
 ]
+
+const metrics = [
+  { value: 'requests', label: 'Requests' },
+  { value: 'tokens', label: 'Tokens' },
+  { value: 'cost', label: 'Cost' },
+]
+
+const modelChartItems = computed(() => {
+  if (!stats.value?.top_models) return []
+  return stats.value.top_models.map(m => {
+    if (chartMetric.value === 'tokens') {
+      return { label: m.model, value: m.input_tokens + m.output_tokens, sub: `(${fmtNum(m.input_tokens)}in / ${fmtNum(m.output_tokens)}out)` }
+    }
+    if (chartMetric.value === 'cost') {
+      const cost = modelCost(m)
+      return { label: m.model, value: cost }
+    }
+    return { label: m.model, value: m.count, sub: `${fmtNum(m.input_tokens + m.output_tokens)} tok` }
+  })
+})
+
+const keyChartItems = computed(() => {
+  if (!stats.value?.per_key) return []
+  return stats.value.per_key.map(k => {
+    if (chartMetric.value === 'tokens') {
+      return { label: k.key_name, value: k.input_tokens + k.output_tokens, sub: `(${fmtNum(k.input_tokens)}in / ${fmtNum(k.output_tokens)}out)` }
+    }
+    if (chartMetric.value === 'cost') {
+      return { label: k.key_name, value: k.cost || 0 }
+    }
+    return { label: k.key_name, value: k.requests, sub: fmtCost(k.cost) }
+  })
+})
+
+// Group per_key_models by key_id
+const keyModelsMap = computed(() => {
+  const map = {}
+  if (!stats.value?.per_key_models) return map
+  for (const km of stats.value.per_key_models) {
+    if (!map[km.key_id]) map[km.key_id] = []
+    map[km.key_id].push(km)
+  }
+  return map
+})
+
+function keyModelChartItems(keyId) {
+  const models = keyModelsMap.value[keyId] || []
+  return models.map(m => {
+    if (chartMetric.value === 'tokens') {
+      return { label: m.model, value: m.input_tokens + m.output_tokens, sub: `(${fmtNum(m.input_tokens)}in / ${fmtNum(m.output_tokens)}out)` }
+    }
+    if (chartMetric.value === 'cost') {
+      return { label: m.model, value: m.cost || 0 }
+    }
+    return { label: m.model, value: m.requests, sub: fmtCost(m.cost) }
+  })
+}
+
+function toggleKeyDetail(keyId) {
+  expandedKey.value = expandedKey.value === keyId ? null : keyId
+}
+
+function modelCost(m) {
+  return (m.input_tokens / 1_000_000) * 3 + (m.output_tokens / 1_000_000) * 15
+}
+
+function chartValueFmt(v) {
+  if (chartMetric.value === 'cost') return fmtCost(v)
+  return fmtNum(v)
+}
 
 async function load() {
   loading.value = true
@@ -105,48 +178,61 @@ onMounted(load)
         </div>
       </div>
 
+      <!-- Metric toggle -->
+      <div class="flex gap-1 p-1 rounded-lg w-fit mb-4" :class="props.theme === 'light' ? 'bg-gray-100' : 'bg-gray-800'">
+        <button v-for="m in metrics" :key="m.value" @click="chartMetric = m.value"
+                class="px-3 py-1 rounded-md text-xs font-medium transition-colors"
+                :class="chartMetric === m.value
+                  ? (props.theme === 'light' ? 'bg-white text-gray-900 shadow-sm' : 'bg-gray-700 text-white')
+                  : (props.theme === 'light' ? 'text-gray-500 hover:text-gray-900' : 'text-gray-400 hover:text-white')">
+          {{ m.label }}
+        </button>
+      </div>
+
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Left column -->
         <div class="lg:col-span-2 space-y-6">
-          <!-- Top Models -->
+          <!-- Top Models Chart -->
           <div v-if="stats.top_models?.length" class="border rounded-xl p-5"
                :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
-            <h3 class="text-sm font-semibold mb-3 uppercase tracking-wider"
-                :class="props.theme === 'light' ? 'text-gray-700' : 'text-white'">Top Models</h3>
-            <div class="space-y-2">
-              <div v-for="m in stats.top_models" :key="m.model"
-                   class="flex justify-between items-center py-1.5 px-3 rounded-lg"
-                   :class="props.theme === 'light' ? 'hover:bg-gray-50' : 'hover:bg-gray-800/30'">
-                <span class="text-sm font-mono" :class="props.theme === 'light' ? 'text-gray-700' : 'text-gray-300'">{{ m.model }}</span>
-                <div class="flex items-center gap-4 text-xs">
-                  <span class="text-gray-500">{{ m.count }} req</span>
-                  <span class="text-blue-400">{{ fmtNum(m.input_tokens) }}in</span>
-                  <span class="text-green-400">{{ fmtNum(m.output_tokens) }}out</span>
-                </div>
-              </div>
-            </div>
+            <h3 class="text-sm font-semibold mb-4 uppercase tracking-wider"
+                :class="props.theme === 'light' ? 'text-gray-700' : 'text-white'">Usage by Model</h3>
+            <BarChart :items="modelChartItems" :theme="props.theme" :value-formatter="chartValueFmt" />
           </div>
 
-          <!-- Per API Key -->
+          <!-- Per API Key Chart + Detail -->
           <div v-if="stats.per_key?.length" class="border rounded-xl p-5"
                :class="props.theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-800'">
-            <h3 class="text-sm font-semibold mb-3 uppercase tracking-wider"
+            <h3 class="text-sm font-semibold mb-4 uppercase tracking-wider"
                 :class="props.theme === 'light' ? 'text-gray-700' : 'text-white'">Usage by API Key</h3>
-            <div class="space-y-2">
-              <div v-for="k in stats.per_key" :key="k.key_id"
-                   class="flex items-center justify-between py-2 px-3 rounded-lg"
-                   :class="props.theme === 'light' ? 'hover:bg-gray-50' : 'hover:bg-gray-800/30'">
-                <div>
-                  <p class="text-sm font-medium" :class="props.theme === 'light' ? 'text-gray-700' : 'text-white'">{{ k.key_name }}</p>
-                  <p class="text-[10px] font-mono" :class="props.theme === 'light' ? 'text-gray-400' : 'text-gray-600'">{{ k.key_masked }}</p>
-                </div>
-                <div class="flex items-center gap-4 text-xs">
-                  <span class="text-gray-500">{{ fmtNum(k.requests) }} req</span>
-                  <span class="text-blue-400">{{ fmtNum(k.input_tokens) }}in</span>
-                  <span class="text-green-400">{{ fmtNum(k.output_tokens) }}out</span>
-                  <span :class="props.theme === 'light' ? 'text-gray-600' : 'text-gray-400'">{{ fmtCost(k.cost) }}</span>
-                </div>
+            <BarChart :items="keyChartItems" :theme="props.theme" :value-formatter="chartValueFmt" />
+
+            <!-- Per-key detail: click a key to see model breakdown -->
+            <div class="mt-4 pt-4 border-t" :class="props.theme === 'light' ? 'border-gray-100' : 'border-gray-800'">
+              <p class="text-[10px] uppercase tracking-wider mb-2"
+                 :class="props.theme === 'light' ? 'text-gray-400' : 'text-gray-600'">
+                Click a key to see model breakdown
+              </p>
+              <div class="flex flex-wrap gap-1.5">
+                <button v-for="k in stats.per_key" :key="k.key_id"
+                        @click="toggleKeyDetail(k.key_id)"
+                        class="text-xs px-2.5 py-1 rounded-full transition-colors"
+                        :class="expandedKey === k.key_id
+                          ? 'bg-blue-600 text-white'
+                          : props.theme === 'light'
+                            ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            : 'bg-gray-800 text-gray-400 hover:bg-gray-700'">
+                  {{ k.key_name }}
+                </button>
               </div>
+              <!-- Expanded key model breakdown -->
+              <div v-if="expandedKey && keyModelsMap[expandedKey]?.length" class="mt-3">
+                <p class="text-xs font-medium mb-2" :class="props.theme === 'light' ? 'text-gray-600' : 'text-gray-300'">
+                  Models for "{{ stats.per_key.find(k => k.key_id === expandedKey)?.key_name }}"
+                </p>
+                <BarChart :items="keyModelChartItems(expandedKey)" :theme="props.theme" :value-formatter="chartValueFmt" :bar-height="24" />
+              </div>
+              <p v-else-if="expandedKey" class="mt-3 text-xs text-gray-500">No model data for this key</p>
             </div>
           </div>
 
@@ -158,9 +244,11 @@ onMounted(load)
             <div class="rounded-lg p-4 font-mono text-sm space-y-1"
                  :class="props.theme === 'light' ? 'bg-gray-50 text-gray-700' : 'bg-gray-950 text-gray-300'">
               <p :class="props.theme === 'light' ? 'text-gray-400' : 'text-gray-500'"># Configure in Cursor:</p>
-              <p>OpenAI Base URL: <span class="text-blue-400">http://localhost:3456/v1</span></p>
+              <p>OpenAI Base URL: <span class="text-blue-400">https://your-public-url/v1</span></p>
               <p>API Key: <span class="text-blue-400">(create one in API Keys tab)</span></p>
               <p>Model: <span class="text-blue-400">cc/claude-opus-4-6:max</span></p>
+              <p class="pt-2" :class="props.theme === 'light' ? 'text-gray-400' : 'text-gray-500'"># Note: Cursor requires a public URL (not localhost)</p>
+              <p :class="props.theme === 'light' ? 'text-gray-400' : 'text-gray-500'"># Use a VPS, Cloudflare tunnel, or similar</p>
             </div>
           </div>
         </div>
