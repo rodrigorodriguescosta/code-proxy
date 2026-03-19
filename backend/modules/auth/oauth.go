@@ -156,7 +156,7 @@ func (fm *FlowManager) WaitForCallback(flowID string, timeout time.Duration) (*O
 	}
 
 	// Exchange code for tokens
-	tokens, err := exchangeCode(flow.config, result.Code, flow.verifier)
+	tokens, err := exchangeCode(flow.config, result.Code, flow.verifier, flow.state)
 	if err != nil {
 		return nil, fmt.Errorf("token exchange: %w", err)
 	}
@@ -208,7 +208,7 @@ func (fm *FlowManager) SubmitCallback(flowID, callbackURL string) (*OAuthTokens,
 	}
 
 	// Exchange code for tokens
-	tokens, err := exchangeCode(flow.config, code, flow.verifier)
+	tokens, err := exchangeCode(flow.config, code, flow.verifier, flow.state)
 	if err != nil {
 		return nil, fmt.Errorf("token exchange: %w", err)
 	}
@@ -225,7 +225,7 @@ func (fm *FlowManager) SubmitCallback(flowID, callbackURL string) (*OAuthTokens,
 }
 
 // exchangeCode exchanges an authorization code for tokens
-func exchangeCode(cfg OAuthConfig, code, verifier string) (*OAuthTokens, error) {
+func exchangeCode(cfg OAuthConfig, code, verifier, state string) (*OAuthTokens, error) {
 	redirectURI := cfg.RedirectURI()
 
 	var reqBody io.Reader
@@ -241,6 +241,9 @@ func exchangeCode(cfg OAuthConfig, code, verifier string) (*OAuthTokens, error) 
 		}
 		if verifier != "" {
 			payload["code_verifier"] = verifier
+		}
+		if state != "" {
+			payload["state"] = state
 		}
 		b, _ := json.Marshal(payload)
 		reqBody = bytes.NewReader(b)
