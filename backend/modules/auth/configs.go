@@ -30,8 +30,8 @@ var Configs = map[string]OAuthConfig{
 	"claude": {
 		Provider:     "claude",
 		ClientID:     "9d1c250a-e61b-44d9-88ed-5944d1962f5e",
-		AuthURL:      "https://console.anthropic.com/v1/oauth/authorize",
-		TokenURL:     "https://console.anthropic.com/v1/oauth/token",
+		AuthURL:      "https://platform.claude.com/oauth/authorize",
+		TokenURL:     "https://platform.claude.com/oauth/token",
 		Scopes:       []string{"org:create_api_key", "user:profile", "user:inference"},
 		CallbackPort: 54545,
 		ContentType:  "application/json",
