@@ -8,12 +8,13 @@ import (
 
 // ExportData represents the full exportable state of the database
 type ExportData struct {
-	Version   int              `json:"version"`
-	ExportedAt string          `json:"exported_at"`
-	Accounts  []Account        `json:"accounts"`
-	ApiKeys   []ApiKeyExport   `json:"api_keys"`
-	Settings  map[string]string `json:"settings"`
-	Logs      []RequestLog     `json:"logs,omitempty"`
+	Version    int               `json:"version"`
+	ExportedAt string            `json:"exported_at"`
+	Accounts   []Account         `json:"accounts"`
+	ApiKeys    []ApiKeyExport    `json:"api_keys"`
+	Settings   map[string]string `json:"settings"`
+	Combos     []Combo           `json:"combos,omitempty"`
+	Logs       []RequestLog      `json:"logs,omitempty"`
 }
 
 // ApiKeyExport includes raw key for portability
@@ -68,6 +69,13 @@ func (db *DB) Export(includeLogs bool) (*ExportData, error) {
 		data.Settings[k] = v
 	}
 
+	// Combos
+	combos, err := db.ListCombos()
+	if err != nil {
+		return nil, fmt.Errorf("export combos: %w", err)
+	}
+	data.Combos = combos
+
 	// Logs (optional)
 	if includeLogs {
 		lrows, err := db.conn.Query(`
@@ -106,6 +114,7 @@ func (db *DB) Import(data *ExportData, mode string) (*ImportResult, error) {
 		db.conn.Exec(`DELETE FROM accounts`)
 		db.conn.Exec(`DELETE FROM api_keys`)
 		db.conn.Exec(`DELETE FROM settings`)
+		db.conn.Exec(`DELETE FROM combos`)
 		db.conn.Exec(`DELETE FROM request_logs`)
 	}
 
@@ -169,6 +178,23 @@ func (db *DB) Import(data *ExportData, mode string) (*ImportResult, error) {
 		result.SettingsImported++
 	}
 
+	// Import combos
+	for _, c := range data.Combos {
+		modelsJSON, _ := json.Marshal(c.Models)
+		res, err := db.conn.Exec(
+			`INSERT OR IGNORE INTO combos (id, name, models, created_at, updated_at)
+			 VALUES (?, ?, ?, ?, ?)`,
+			c.ID, c.Name, string(modelsJSON), c.CreatedAt, c.UpdatedAt,
+		)
+		if err == nil {
+			if n, _ := res.RowsAffected(); n > 0 {
+				result.CombosImported++
+			} else {
+				result.CombosSkipped++
+			}
+		}
+	}
+
 	// Import logs
 	for _, l := range data.Logs {
 		res, err := db.conn.Exec(
@@ -196,6 +222,8 @@ type ImportResult struct {
 	ApiKeysSkipped   int `json:"api_keys_skipped"`
 	SettingsImported int `json:"settings_imported"`
 	SettingsSkipped  int `json:"settings_skipped"`
+	CombosImported   int `json:"combos_imported"`
+	CombosSkipped    int `json:"combos_skipped"`
 	LogsImported     int `json:"logs_imported"`
 	LogsSkipped      int `json:"logs_skipped"`
 }

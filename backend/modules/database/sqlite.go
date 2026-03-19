@@ -131,6 +131,15 @@ func (db *DB) migrate() error {
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)`)
 
+	// Combos table (model combos with fallback)
+	db.conn.Exec(`CREATE TABLE IF NOT EXISTS combos (
+		id TEXT PRIMARY KEY,
+		name TEXT NOT NULL UNIQUE,
+		models TEXT DEFAULT '[]',
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	)`)
+
 	// Seed default provider if empty
 	var count int
 	db.conn.QueryRow("SELECT COUNT(*) FROM providers").Scan(&count)
@@ -433,15 +442,20 @@ func (db *DB) GetStatsForPeriod(period string) map[string]any {
 	stats := map[string]any{}
 
 	whereClause := ""
+	whereClauseAliased := "" // for queries with table alias "l"
 	switch period {
 	case "24h":
 		whereClause = "WHERE created_at >= datetime('now', '-1 day')"
+		whereClauseAliased = "WHERE l.created_at >= datetime('now', '-1 day')"
 	case "7d":
 		whereClause = "WHERE created_at >= datetime('now', '-7 days')"
+		whereClauseAliased = "WHERE l.created_at >= datetime('now', '-7 days')"
 	case "30d":
 		whereClause = "WHERE created_at >= datetime('now', '-30 days')"
+		whereClauseAliased = "WHERE l.created_at >= datetime('now', '-30 days')"
 	case "60d":
 		whereClause = "WHERE created_at >= datetime('now', '-60 days')"
+		whereClauseAliased = "WHERE l.created_at >= datetime('now', '-60 days')"
 	}
 
 	// Total requests

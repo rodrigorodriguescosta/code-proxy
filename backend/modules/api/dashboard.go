@@ -242,6 +242,9 @@ func registerDashboardRoutes(mux *http.ServeMux, db *database.DB, acctMgr *accou
 
 	// Accounts (multi-provider, multi-account)
 	registerAccountRoutes(mux, db, acctMgr, registry)
+
+	// Combos (model combos with fallback)
+	registerComboRoutes(mux, db)
 }
 
 // --- API Keys ---

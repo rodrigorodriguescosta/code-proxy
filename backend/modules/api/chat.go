@@ -24,8 +24,6 @@ func handleChat(registry *provider.Registry, acctMgr *account.Manager, defaultMo
 			return
 		}
 
-		startTime := time.Now()
-
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			writeError(w, "Failed to read request", http.StatusBadRequest)
@@ -45,89 +43,198 @@ func handleChat(registry *provider.Registry, acctMgr *account.Manager, defaultMo
 			modelStr = defaultModel
 		}
 
-		// Resolve provider via registry (strip prefix, e.g. "cc/" -> claude-cli)
-		p, providerType, cleanModel, err := registry.ResolveProvider(modelStr)
-		if err != nil {
-			log.Printf("[CHAT] Provider resolve error: %v", err)
-			writeError(w, "No active provider for model: "+req.Model, http.StatusServiceUnavailable)
-			return
-		}
-
-		model := cleanModel
-		log.Printf("[CHAT] Model: %s -> %s (provider: %s, effort: %s, stream: %v)",
-			req.Model, model, providerType, effort, req.Stream)
-
-		// Get API key info from context
-		apiKeyID := GetApiKeyID(r)
-
-		// Estimate input tokens from request body
-		inputTokens := estimateInputTokens(body)
-
-		// Execute with retry/fallback across accounts
-		var lastErr error
-		for attempt := 0; attempt < maxRetries; attempt++ {
-			acct, err := acctMgr.Select(providerType, model)
-			if err != nil {
-				log.Printf("[CHAT] Account select error: %v", err)
-				writeError(w, "No available account: "+err.Error(), http.StatusServiceUnavailable)
+		// Check if this is a combo (no "/" prefix = potential combo name)
+		if db != nil && !strings.Contains(modelStr, "/") {
+			combo, err := db.GetComboByName(modelStr)
+			if err == nil && combo != nil && len(combo.Models) > 0 {
+				handleComboChat(w, r, body, req, combo, effort, registry, acctMgr, db)
 				return
 			}
+		}
 
-			provReq := &provider.Request{
-				RawBody: json.RawMessage(body),
-				Model:   model,
-				Effort:  effort,
-				Stream:  req.Stream,
-				Account: acct,
-			}
+		executeSingleModel(w, r, body, req, modelStr, effort, registry, acctMgr, db)
+	}
+}
 
-			events, err := p.Execute(r.Context(), provReq)
-			if err != nil {
-				log.Printf("[CHAT] Execute error (attempt %d): %v", attempt+1, err)
-				if acct != nil {
-					acctMgr.ReportError(acct.ID, model, 500, err.Error())
-				}
-				lastErr = err
-				continue
-			}
+// handleComboChat tries each model in the combo sequentially until one succeeds
+func handleComboChat(w http.ResponseWriter, r *http.Request, body []byte, req ChatRequest, combo *database.Combo, effort string, registry *provider.Registry, acctMgr *account.Manager, db *database.DB) {
+	log.Printf("[COMBO] Using combo %q with %d models", combo.Name, len(combo.Models))
 
-			// Success — report and serve response
+	var lastErr error
+	for i, comboModel := range combo.Models {
+		// Parse effort from combo model entry too (e.g. "cc/opus:high")
+		comboModelStr, comboEffort := parseModelAndEffort(comboModel)
+		if comboEffort == "" {
+			comboEffort = effort // use effort from original request
+		}
+
+		log.Printf("[COMBO] Trying model %d/%d: %s", i+1, len(combo.Models), comboModelStr)
+
+		err := executeSingleModelForCombo(w, r, body, req, comboModelStr, comboEffort, registry, acctMgr, db)
+		if err == nil {
+			return // success
+		}
+
+		log.Printf("[COMBO] Model %s failed: %v, trying next...", comboModelStr, err)
+		lastErr = err
+	}
+
+	// All combo models failed
+	errMsg := "All models in combo failed"
+	if lastErr != nil {
+		errMsg = fmt.Sprintf("All models in combo %q failed. Last error: %s", combo.Name, lastErr.Error())
+	}
+	writeError(w, errMsg, http.StatusServiceUnavailable)
+}
+
+// executeSingleModelForCombo tries a single model and returns nil on success or error on failure
+// Does NOT write to ResponseWriter on error (so the combo can try the next model)
+func executeSingleModelForCombo(w http.ResponseWriter, r *http.Request, body []byte, req ChatRequest, modelStr, effort string, registry *provider.Registry, acctMgr *account.Manager, db *database.DB) error {
+	startTime := time.Now()
+
+	p, providerType, cleanModel, err := registry.ResolveProvider(modelStr)
+	if err != nil {
+		return fmt.Errorf("provider resolve: %w", err)
+	}
+
+	apiKeyID := GetApiKeyID(r)
+	inputTokens := estimateInputTokens(body)
+
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		acct, err := acctMgr.Select(providerType, cleanModel)
+		if err != nil {
+			return fmt.Errorf("no available account: %w", err)
+		}
+
+		provReq := &provider.Request{
+			RawBody: json.RawMessage(body),
+			Model:   cleanModel,
+			Effort:  effort,
+			Stream:  req.Stream,
+			Account: acct,
+		}
+
+		events, err := p.Execute(r.Context(), provReq)
+		if err != nil {
 			if acct != nil {
-				acctMgr.ReportSuccess(acct.ID, model)
+				acctMgr.ReportError(acct.ID, cleanModel, 500, err.Error())
 			}
+			continue
+		}
 
-			accountID := ""
-			if acct != nil {
-				accountID = acct.ID
-			}
+		// Success
+		if acct != nil {
+			acctMgr.ReportSuccess(acct.ID, cleanModel)
+		}
 
-			var outputTokens int
-			var cost float64
-			if req.Stream {
-				outputTokens, cost = streamResponse(w, events, model, req.Model)
-			} else {
-				outputTokens, cost = nonStreamResponse(w, events, model, req.Model)
-			}
+		accountID := ""
+		if acct != nil {
+			accountID = acct.ID
+		}
 
-			// Log the request
-			if db != nil {
-				durationMs := time.Since(startTime).Milliseconds()
-				if cost == 0 {
-					inRate, outRate := database.ModelCostRates(model)
-					cost = float64(inputTokens)/1_000_000*inRate + float64(outputTokens)/1_000_000*outRate
-				}
-				db.LogRequest(apiKeyID, providerType, model, effort, accountID, inputTokens, outputTokens, cost, durationMs)
+		var outputTokens int
+		var cost float64
+		if req.Stream {
+			outputTokens, cost = streamResponse(w, events, cleanModel, req.Model)
+		} else {
+			outputTokens, cost = nonStreamResponse(w, events, cleanModel, req.Model)
+		}
+
+		if db != nil {
+			durationMs := time.Since(startTime).Milliseconds()
+			if cost == 0 {
+				inRate, outRate := database.ModelCostRates(cleanModel)
+				cost = float64(inputTokens)/1_000_000*inRate + float64(outputTokens)/1_000_000*outRate
 			}
+			db.LogRequest(apiKeyID, providerType, cleanModel, effort, accountID, inputTokens, outputTokens, cost, durationMs)
+		}
+		return nil
+	}
+
+	return fmt.Errorf("all %d retries failed for %s", maxRetries, modelStr)
+}
+
+// executeSingleModel handles a single model request (non-combo path)
+func executeSingleModel(w http.ResponseWriter, r *http.Request, body []byte, req ChatRequest, modelStr, effort string, registry *provider.Registry, acctMgr *account.Manager, db *database.DB) {
+	startTime := time.Now()
+
+	p, providerType, cleanModel, err := registry.ResolveProvider(modelStr)
+	if err != nil {
+		log.Printf("[CHAT] Provider resolve error: %v", err)
+		writeError(w, "No active provider for model: "+req.Model, http.StatusServiceUnavailable)
+		return
+	}
+
+	model := cleanModel
+	log.Printf("[CHAT] Model: %s -> %s (provider: %s, effort: %s, stream: %v)",
+		req.Model, model, providerType, effort, req.Stream)
+
+	apiKeyID := GetApiKeyID(r)
+	inputTokens := estimateInputTokens(body)
+
+	var lastErr error
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		acct, err := acctMgr.Select(providerType, model)
+		if err != nil {
+			log.Printf("[CHAT] Account select error: %v", err)
+			writeError(w, "No available account: "+err.Error(), http.StatusServiceUnavailable)
 			return
 		}
 
-		// All attempts failed
-		errMsg := "Provider error"
-		if lastErr != nil {
-			errMsg = lastErr.Error()
+		provReq := &provider.Request{
+			RawBody: json.RawMessage(body),
+			Model:   model,
+			Effort:  effort,
+			Stream:  req.Stream,
+			Account: acct,
 		}
-		writeError(w, errMsg, http.StatusInternalServerError)
+
+		events, err := p.Execute(r.Context(), provReq)
+		if err != nil {
+			log.Printf("[CHAT] Execute error (attempt %d): %v", attempt+1, err)
+			if acct != nil {
+				acctMgr.ReportError(acct.ID, model, 500, err.Error())
+			}
+			lastErr = err
+			continue
+		}
+
+		// Success — report and serve response
+		if acct != nil {
+			acctMgr.ReportSuccess(acct.ID, model)
+		}
+
+		accountID := ""
+		if acct != nil {
+			accountID = acct.ID
+		}
+
+		var outputTokens int
+		var cost float64
+		if req.Stream {
+			outputTokens, cost = streamResponse(w, events, model, req.Model)
+		} else {
+			outputTokens, cost = nonStreamResponse(w, events, model, req.Model)
+		}
+
+		// Log the request
+		if db != nil {
+			durationMs := time.Since(startTime).Milliseconds()
+			if cost == 0 {
+				inRate, outRate := database.ModelCostRates(model)
+				cost = float64(inputTokens)/1_000_000*inRate + float64(outputTokens)/1_000_000*outRate
+			}
+			db.LogRequest(apiKeyID, providerType, model, effort, accountID, inputTokens, outputTokens, cost, durationMs)
+		}
+		return
 	}
+
+	// All attempts failed
+	errMsg := "Provider error"
+	if lastErr != nil {
+		errMsg = lastErr.Error()
+	}
+	writeError(w, errMsg, http.StatusInternalServerError)
 }
 
 // streamResponse streams SSE events and returns output token count and cost

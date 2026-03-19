@@ -88,6 +88,12 @@ export const api = {
     }),
   }),
 
+  // Combos
+  listCombos: () => request('/api/combos'),
+  createCombo: (data) => request('/api/combos', { method: 'POST', body: JSON.stringify(data) }),
+  updateCombo: (id, data) => request(`/api/combos/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteCombo: (id) => request(`/api/combos/${id}`, { method: 'DELETE' }),
+
   // Export / Import
   exportData: (includeLogs) => request('/api/export' + (includeLogs ? '?logs=true' : '')),
   importData: (data, mode = 'merge') => request(`/api/import?mode=${mode}`, { method: 'POST', body: JSON.stringify(data) }),

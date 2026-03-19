@@ -194,6 +194,20 @@ func (s *Server) handleModels(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var models []ModelItem
+
+	// Combos first
+	if s.db != nil {
+		combos, _ := s.db.ListCombos()
+		for _, c := range combos {
+			models = append(models, ModelItem{
+				ID:      c.Name,
+				Object:  "model",
+				OwnedBy: "combo",
+			})
+		}
+	}
+
+	// Then provider models
 	for _, m := range s.registry.AllModels() {
 		models = append(models, ModelItem{
 			ID:      m.ID,
