@@ -543,7 +543,7 @@ func (db *DB) GetStatsForPeriod(period string) map[string]any {
 		%s
 		GROUP BY l.api_key_id
 		ORDER BY COUNT(*) DESC
-	`, whereClause)
+	`, whereClauseAliased)
 	keyRows, _ := db.conn.Query(keyQuery)
 	if keyRows != nil {
 		defer keyRows.Close()
@@ -578,7 +578,7 @@ func (db *DB) GetStatsForPeriod(period string) map[string]any {
 		%s
 		GROUP BY l.api_key_id, l.model
 		ORDER BY l.api_key_id, COUNT(*) DESC
-	`, whereClause)
+	`, whereClauseAliased)
 	kmRows, _ := db.conn.Query(keyModelQuery)
 	if kmRows != nil {
 		defer kmRows.Close()

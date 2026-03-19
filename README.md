@@ -240,14 +240,33 @@ For the best experience, prefer the **OAuth Provider** mode — your IDE handles
 
 ## Dashboard
 
-The web dashboard at `http://localhost:3456` provides:
+The web dashboard at `http://localhost:3456` gives you full visibility and control over your proxy.
 
-- **Providers** — connect accounts via OAuth or API key, see available models
-- **Usage stats** — requests, tokens, and estimated costs over time
-- **Account usage** — per-account breakdown of consumption
-- **Request logs** — full history with model, tokens, cost, and duration
-- **API keys** — create, toggle, and revoke access keys
-- **Settings** — default model, tunnel, dashboard password, require API key
+### Providers
+
+Connect your accounts — detect local CLI tools, authenticate via OAuth, or add API keys. All 15+ providers are shown in one place.
+
+![Providers](docs/screenshot-providers.png)
+
+### Usage & Analytics
+
+Track requests, input/output token consumption, and estimated cost — broken down by model, by API key, and over configurable time windows (24h, 7d, 30d, 60d, all time). Click any API key to drill into its per-model breakdown.
+
+![Usage & Analytics](docs/screenshot-usage.png)
+
+### All dashboard features
+
+| Feature | Description |
+|---------|-------------|
+| **Providers** | Connect accounts via OAuth or API key; detect local CLI tools |
+| **Combos** | Define named model groups with sequential fallback (try model A → B → C) |
+| **Usage & Analytics** | Requests, tokens, and estimated costs by model and API key |
+| **Account Usage** | Per-account consumption breakdown across all providers |
+| **Logs** | Full request history with model, tokens, cost, and duration |
+| **API Keys** | Create, toggle, and revoke access keys; set usage quotas |
+| **Tunnel** | Enable Cloudflare tunnel (quick or named) directly from the UI |
+| **Settings** | Default model, dashboard password, require API key toggle |
+| **Export / Import** | Export all configuration and accounts to JSON; restore on a new machine |
 
 ## Configuration
 
